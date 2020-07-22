@@ -8,6 +8,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
@@ -26,8 +27,8 @@ public class JwtProvider {
     private final long accessTokenExpirationTime;
     private final long refreshTokenExpirationTime;
 
-    private final String accessCookieName;
-    private final String refreshCookieName;
+    public final String accessCookieName;
+    public final String refreshCookieName;
 
     public JwtProvider(
             @Value("${security.jwt.token.secret-key}") String secretKey,
@@ -111,5 +112,25 @@ public class JwtProvider {
         Claims claims = Jwts.claims().setSubject(user.getEmail());
         claims.put(this.ROLES_KEY, user.getAuthorities());
         return claims;
+    }
+
+    public HttpHeaders deleteJwtCookies() {
+        HttpHeaders header = new HttpHeaders();
+        header.add(HttpHeaders.SET_COOKIE,
+                this.generateCookieFromToken(
+                        this.generateTokenForDeletion(true)
+                ).toString());
+        header.add(HttpHeaders.SET_COOKIE,
+                this.generateCookieFromToken(
+                        this.generateTokenForDeletion(false)
+                ).toString());
+        return header;
+    }
+    private Token generateTokenForDeletion(boolean access){
+        return new Token(access ?
+                Token.TokenType.ACCESS:Token.TokenType.REFRESH,
+                "",
+                0L,
+                null);
     }
 }

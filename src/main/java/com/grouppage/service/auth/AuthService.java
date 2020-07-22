@@ -4,9 +4,12 @@ import com.grouppage.domain.entity.User;
 import com.grouppage.domain.notmapped.Token;
 import com.grouppage.domain.repository.UserRepository;
 import com.grouppage.domain.response.LoginRequest;
+import com.grouppage.domain.response.RegisterRequest;
+import com.grouppage.exception.UsernameAlreadyExists;
 import com.grouppage.security.jwt.JwtProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -35,7 +38,7 @@ public class AuthService {
         this.jwtProvider = jwtProvider;
     }
 
-    public void signIn(LoginRequest loginRequest) {
+    public ResponseEntity<Void> signIn(LoginRequest loginRequest) {
         Authentication authentication =
                 authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(
@@ -44,7 +47,7 @@ public class AuthService {
                 );
         SecurityContextHolder.getContext().setAuthentication(authentication);
         HttpHeaders headers = this.generateCookieWithNewTokens();
-
+        return ResponseEntity.accepted().headers(headers).build();
     }
     private User getUserFromContext()throws UsernameNotFoundException{
         Object objectPrincipal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -65,6 +68,19 @@ public class AuthService {
         headers.add(HttpHeaders.SET_COOKIE, jwtProvider.generateCookieFromToken(access).toString());
         headers.add(HttpHeaders.SET_COOKIE, jwtProvider.generateCookieFromToken(refresh).toString());
         return headers;
+    }
+
+    public void signUp(RegisterRequest registerRequest)throws UsernameAlreadyExists {
+        if (!userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
+            User user = userRepository.save(registerRequest.toUser(this.passwordEncoder));
+        }
+        throw new UsernameAlreadyExists("This email is taken!");
+    }
+
+    public ResponseEntity<Void> signOut() {
+        HttpHeaders removeCookiesHeader =
+                this.jwtProvider.deleteJwtCookies();
+        return ResponseEntity.noContent().headers(removeCookiesHeader).build();
     }
 }
 

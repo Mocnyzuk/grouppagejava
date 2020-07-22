@@ -30,6 +30,7 @@ public class User extends AbstractEntityDate{
 
     // TODO insert pattern for phone number
     @Pattern(regexp = "")
+    @Nullable
     private String phone;
 
     // TODO patter for secure pass
