@@ -18,6 +18,9 @@ public class Participant extends AbstractEntityDate{
     @NotNull
     private String nickname;
 
+    @OneToOne(targetEntity = User.class)
+    private User user;
+
     @OneToOne(targetEntity = Group.class)
     private Group group;
 

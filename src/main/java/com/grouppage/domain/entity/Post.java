@@ -26,7 +26,7 @@ public class Post extends AbstractEntityDate{
 
     // TODO remove SQL injection posiibility
     @NotNull
-    @Pattern(regexp = "")
+    //@Pattern(regexp = "")
     private String content;
 
     @Convert(converter = HashTagConverter.class)

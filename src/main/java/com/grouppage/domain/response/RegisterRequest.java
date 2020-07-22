@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Size;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -30,10 +31,12 @@ public class RegisterRequest {
         }
         User user = new User();
         user.setEmail(this.email);
-        user.setActivated(false);
+        user.setActivated(true);
         user.setAuthorities(Collections.singletonList(
                 new SimpleGrantedAuthority("ROLE_USER")));
         user.setPhone(this.phone);
+        user.setPassword(encoder.encode(this.password));
+        user.setLastOnline(Instant.now());
         return user;
     }
 

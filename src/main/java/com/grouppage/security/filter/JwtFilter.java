@@ -60,6 +60,7 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private String getTokenFromCookie(Cookie[] cookies)throws WrongCredentialsException {
+        if(cookies == null) throw new WrongCredentialsException("Token is not valid");
         for (Cookie cookie : cookies) {
             if(cookie.getName().equals(jwtProvider.accessCookieName)){
                 String token = SecurityCipher.decrypt(cookie.getComment());

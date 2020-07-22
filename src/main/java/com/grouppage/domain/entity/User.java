@@ -29,14 +29,13 @@ public class User extends AbstractEntityDate{
     private String email;
 
     // TODO insert pattern for phone number
-    @Pattern(regexp = "")
+    //@Pattern(regexp = "")
     @Nullable
     private String phone;
 
     // TODO patter for secure pass
-    @Size(min = 8, max = 16)
     @NotNull
-    @Pattern(regexp = "")
+    //@Pattern(regexp = "")
     private String password;
 
     @Column(columnDefinition = "boolean default false")
