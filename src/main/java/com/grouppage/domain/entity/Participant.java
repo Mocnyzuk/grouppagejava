@@ -1,0 +1,25 @@
+package com.grouppage.domain.entity;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
+@EqualsAndHashCode(callSuper = true)
+@Data
+@Entity
+public class Participant extends AbstractEntityDate{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    @NotNull
+    private String nickname;
+
+    @OneToOne(targetEntity = Group.class)
+    private Group group;
+
+    private boolean isEnabled = false;
+}
