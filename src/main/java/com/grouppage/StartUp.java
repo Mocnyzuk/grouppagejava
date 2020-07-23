@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-@Component
+//@Component
 public class StartUp implements CommandLineRunner {
 
     private final UserRepository userRepository;
@@ -37,7 +37,7 @@ public class StartUp implements CommandLineRunner {
     public List<Participant> participants = new ArrayList<>();
 
     public List<String> categories = Arrays.asList("IT", "KUCHNIA", "CARS", "OSWIETLENIE", "ELEKTRYKA", "METEOROLOGIA", "AEROPLANY");
-    @Autowired
+    //@Autowired
     public StartUp(UserRepository userRepository, PostRepository postRepository, GroupRepository groupRepository, ParticipantRepository participantRepository, ReactionRepository reactionRepository, SignUpFormRepository signUpFormRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;

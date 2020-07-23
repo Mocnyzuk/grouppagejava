@@ -25,6 +25,7 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
 
     private static final String BEARER = "Bearer ";
+    private static final String LOGIN = "login";
     private final CustomUserDetailsService userDetailsService;
     private final JwtProvider jwtProvider;
 
@@ -39,8 +40,10 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException, AccessTokenExpired, WrongCredentialsException {
-        UserDetails userDetails = this.getUser(request);
-        this.processAuth(request, userDetails);
+        if(!request.getRequestURI().contains(LOGIN)) {
+            UserDetails userDetails = this.getUser(request);
+            this.processAuth(request, userDetails);
+        }
         filterChain.doFilter(request, response);
     }
 
@@ -63,9 +66,9 @@ public class JwtFilter extends OncePerRequestFilter {
         if(cookies == null) throw new WrongCredentialsException("Token is not valid");
         for (Cookie cookie : cookies) {
             if(cookie.getName().equals(jwtProvider.accessCookieName)){
-                String token = SecurityCipher.decrypt(cookie.getComment());
+                String token = SecurityCipher.decrypt(cookie.getValue());
                 if(jwtProvider.isValidToken(token)) {
-                    return cookie.getComment();
+                    return token;
                 }else{
                     throw new WrongCredentialsException("Token is not valid");
                 }
@@ -75,11 +78,7 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private UserDetails getPrincipalFromToken(String tokenString)throws WrongCredentialsException {
-        tokenString = SecurityCipher.decrypt(tokenString);
-        if(jwtProvider.isValidToken(tokenString)) {
-            String email = jwtProvider.getEmail(tokenString);
-            return userDetailsService.loadUserByUsername(email);
-        }
-        throw new WrongCredentialsException("Token is not valid");
+        String email = jwtProvider.getEmail(tokenString);
+        return userDetailsService.loadUserByUsername(email);
     }
 }

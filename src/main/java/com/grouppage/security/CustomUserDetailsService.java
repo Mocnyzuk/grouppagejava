@@ -33,7 +33,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.isActivated(),
                 true,
                 true,
-                user.isDeleted(),
+                !user.isDeleted(),
                 user.getAuthorities()
         );
     }
