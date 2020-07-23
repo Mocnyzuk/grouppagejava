@@ -60,8 +60,11 @@ public class JwtProvider {
         return result;
     }
     public String getEmail(String token) {
-        return Jwts.parser().setSigningKey(secretKey)
-                .parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
     }
     public List<GrantedAuthority> getRoles(String token){
         // TODO check if it works

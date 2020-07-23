@@ -2,7 +2,9 @@ package com.grouppage.web.chat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.grouppage.domain.entity.chat.PrivateMessage;
 import com.grouppage.domain.response.LoginRequest;
+import com.grouppage.security.jwt.JwtProvider;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -10,13 +12,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.simp.stomp.StompFrameHandler;
-import org.springframework.messaging.simp.stomp.StompHeaders;
-import org.springframework.messaging.simp.stomp.StompSession;
-import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
+import org.springframework.messaging.converter.MappingJackson2MessageConverter;
+import org.springframework.messaging.simp.stomp.*;
 import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -26,44 +27,144 @@ import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
+import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
 @AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SocketChatControllerTest {
 
-    static final String WEBSOCKET_URI = "ws://localhost:8080/websocketApp";
-    static final String WEBSOCKET_TOPIC = "/topic";
+    public static final String WEBSOCKET_URI = "ws://localhost:{port}/websocketApp";
+    public static final String WEBSOCKET_TOPIC = "/topic";
 
-    public static final String AUTH_HEADER = "Authorization";
-    public static final String SET_COOKIE = "Set-Cookie";
+    @Autowired
+    private MockMvc mockMvc;
 
     public static final ObjectMapper MAPPER = new ObjectMapper();
 
-    @Autowired
-    public MockMvc mockMvc;
+    @LocalServerPort
+    private int port;
 
+    private SockJsClient sockJsClient;
 
-    static BlockingQueue<String> blockingQueue;
-    static WebSocketStompClient stompClient;
-    static String fpmolesToken = "Bearer ";
+    private WebSocketStompClient stompClient;
+
+    private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+
 
     @BeforeEach
     void setup() throws Exception {
-        blockingQueue = new LinkedBlockingDeque<>();
-        stompClient = new WebSocketStompClient(new SockJsClient(
-                Arrays.asList(new WebSocketTransport(new StandardWebSocketClient()))));
+        String accessToken = this.authAsFpmoles();
+        headers.add(HttpHeaders.AUTHORIZATION, accessToken);
+        List<Transport> transports = new ArrayList<>();
+        transports.add(new WebSocketTransport(new StandardWebSocketClient()));
+        this.sockJsClient = new SockJsClient(transports);
 
+        this.stompClient = new WebSocketStompClient(sockJsClient);
+        this.stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+
+    }
+
+
+
+    @Test
+    void shouldReceiveAMessageFromTheServer() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<Throwable> failure = new AtomicReference<>();
+
+        StompSessionHandler handler = new TestSessionHandler(failure){
+            @Override
+            public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
+                int i = 10;
+                // Step 2: Simulate the client subscribing to a topic
+                session.subscribe("/topic/conversation/4", new StompFrameHandler() {
+
+                    @Override
+                    public Type getPayloadType(StompHeaders headers) {
+                        return PrivateMessage.class;
+                    }
+
+                    @Override
+                    public void handleFrame(StompHeaders headers, Object payload) {
+                        PrivateMessage greeting = (PrivateMessage) payload;
+                        try {
+                            // Step 4:  Validate that the broadcast server response is correct
+                            assertEquals("Hello Spring", greeting.getContent());
+                        } catch (Throwable t) {
+                            failure.set(t);
+                        } finally {
+                            session.disconnect();
+                            latch.countDown();
+                        }
+                    }
+                });
+                try {
+                    // Step 3:  Simulate sending in a message from the client to the server
+                    PrivateMessage myMessage = new PrivateMessage();
+                    myMessage.setContent("Hello Spring");
+                    session.send("/app/conversation/4/sendMessage", myMessage);
+                } catch (Throwable t) {
+                    failure.set(t);
+                    latch.countDown();
+                }
+            }
+        };
+        this.stompClient.connect(
+                WEBSOCKET_URI,
+                this.headers,
+                handler,
+                this.port);
+        if (latch.await(3, TimeUnit.SECONDS)) {
+            if (failure.get() != null) {
+                throw new AssertionError("", failure.get());
+            }
+        }
+        else {
+            fail("Greeting not received");
+        }
+
+    }
+
+
+    private class TestSessionHandler extends StompSessionHandlerAdapter {
+
+        private final AtomicReference<Throwable> failure;
+
+
+        public TestSessionHandler(AtomicReference<Throwable> failure) {
+            this.failure = failure;
+        }
+
+        @Override
+        public void handleFrame(StompHeaders headers, Object payload) {
+            this.failure.set(new Exception(headers.toString()));
+        }
+
+        @Override
+        public void handleException(StompSession s, StompCommand c, StompHeaders h, byte[] p, Throwable ex) {
+            this.failure.set(ex);
+        }
+
+        @Override
+        public void handleTransportError(StompSession session, Throwable ex) {
+            this.failure.set(ex);
+        }
+    }
+
+
+    private String authAsFpmoles() throws Exception {
         MvcResult result = mockMvc
                 .perform(MockMvcRequestBuilders
                         .post("/api/login")
@@ -81,42 +182,8 @@ class SocketChatControllerTest {
                 .andReturn();
         String accessCookie = result
                 .getResponse()
-                .getHeader(SET_COOKIE);
-        fpmolesToken = fpmolesToken.concat(accessCookie.substring(accessCookie.indexOf("=")+1, accessCookie.indexOf(";")));
-    }
-
-    @Test
-    @Disabled
-    void test1(){
-        assertTrue(fpmolesToken.length() > 16);
-    }
-
-
-
-    @Test
-    public void shouldReceiveAMessageFromTheServer() throws Exception {
-        WebSocketHttpHeaders socketsHeader = new WebSocketHttpHeaders();
-        socketsHeader.add(HttpHeaders.AUTHORIZATION, fpmolesToken);
-        StompSession session = stompClient
-                .connect(WEBSOCKET_URI, socketsHeader, new StompSessionHandlerAdapter() {} )
-                .get(1, SECONDS);
-        session.subscribe(WEBSOCKET_TOPIC, new DefaultStompFrameHandler());
-
-        String message = "MESSAGE TEST";
-        session.send("/app/conversation/21/sendMessage", message.getBytes());
-
-        assertEquals(message, blockingQueue.poll(1, SECONDS));
-    }
-
-    class DefaultStompFrameHandler implements StompFrameHandler {
-        @Override
-        public Type getPayloadType(StompHeaders stompHeaders) {
-            return byte[].class;
-        }
-
-        @Override
-        public void handleFrame(StompHeaders stompHeaders, Object o) {
-            blockingQueue.offer(new String((byte[]) o));
-        }
+                .getCookie("accessToken")
+                .getValue();
+        return "Bearer ".concat(accessCookie);
     }
 }

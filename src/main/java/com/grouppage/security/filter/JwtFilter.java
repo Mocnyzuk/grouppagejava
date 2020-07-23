@@ -41,7 +41,7 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException, AccessTokenExpired, WrongCredentialsException {
-        if(!request.getRequestURI().contains(LOGIN) && !request.getRequestURI().contains(WEBSOCKET)) {
+        if(!request.getRequestURI().contains(LOGIN)) {
             UserDetails userDetails = this.getUser(request);
             this.processAuth(request, userDetails);
         }
@@ -51,7 +51,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private UserDetails getUser(HttpServletRequest request) throws WrongCredentialsException {
         String auth = request.getHeader("Authorization");
         if(auth != null){
-            return this.getPrincipalFromToken(auth.replace(BEARER, ""));
+            return this.getPrincipalFromToken(SecurityCipher.decrypt(auth.replace(BEARER, "")));
         }else{
             auth = this.getTokenFromCookie(request.getCookies());
             return this.getPrincipalFromToken(auth);
