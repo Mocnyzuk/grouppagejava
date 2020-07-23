@@ -16,7 +16,7 @@ public class PrivateMessage extends AbstractEntityDate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @NotNull
+    @Column(columnDefinition = "varchar(255) default 'CHAT'")
     private String type;
 
     @NotNull

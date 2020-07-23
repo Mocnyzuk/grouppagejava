@@ -16,8 +16,8 @@ import java.util.List;
 @RequestMapping("/api/test")
 public class TestController {
 
-    private GroupRepository groupRepository;
-    private PostRepository postRepository;
+    private final GroupRepository groupRepository;
+    private final PostRepository postRepository;
 
     @Autowired
     public TestController(GroupRepository groupRepository, PostRepository postRepository) {

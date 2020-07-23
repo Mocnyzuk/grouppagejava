@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
+@Table(uniqueConstraints={@UniqueConstraint(columnNames = {"nickname" , "group_id", "user_id"})})
 public class Participant extends AbstractEntityDate{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

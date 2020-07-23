@@ -26,6 +26,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private static final String BEARER = "Bearer ";
     private static final String LOGIN = "login";
+    private static final String WEBSOCKET = "websocket";
     private final CustomUserDetailsService userDetailsService;
     private final JwtProvider jwtProvider;
 
@@ -40,7 +41,7 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException, AccessTokenExpired, WrongCredentialsException {
-        if(!request.getRequestURI().contains(LOGIN)) {
+        if(!request.getRequestURI().contains(LOGIN) && !request.getRequestURI().contains(WEBSOCKET)) {
             UserDetails userDetails = this.getUser(request);
             this.processAuth(request, userDetails);
         }
@@ -63,7 +64,7 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private String getTokenFromCookie(Cookie[] cookies)throws WrongCredentialsException {
-        if(cookies == null) throw new WrongCredentialsException("Token is not valid");
+        if(cookies == null) throw new WrongCredentialsException("Request doesnt contains neither header or cookie!");
         for (Cookie cookie : cookies) {
             if(cookie.getName().equals(jwtProvider.accessCookieName)){
                 String token = SecurityCipher.decrypt(cookie.getValue());

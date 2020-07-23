@@ -102,39 +102,23 @@ public class StartUp implements CommandLineRunner {
      * PARTICIPANTS THINGS
      */
     private void loadParticipantsToGroups() {
-        List<String> nicknames = Arrays.asList("lol1", "andrzej1", "mnarek", "lewislaw", "barek", "jurek", "anmcymon", "jurczyson");
-        for (int i = 1; i < nicknames.size()-1; i++) {
-            
-            Participant lol1 = this.generateBasicParticipantToRandomGroup(nicknames.get(rand.nextInt(i+1)) + (char)(rand.nextInt(26) + 'a'));
-            Participant andrzej1 = this.generateBasicParticipantToRandomGroup(nicknames.get(rand.nextInt(i+1)) + (char)(rand.nextInt(26) + 'a'));
-            Participant mnarek = this.generateBasicParticipantToRandomGroup(nicknames.get(rand.nextInt(i+1)) + (char)(rand.nextInt(26) + 'a'));
-            Participant lewislaw = this.generateBasicParticipantToRandomGroup(nicknames.get(rand.nextInt(i+1)) + (char)(rand.nextInt(26) + 'a'));
-            Participant barek = this.generateBasicParticipantToRandomGroup(nicknames.get(rand.nextInt(i+1)) + (char)(rand.nextInt(26) + 'a'));
-            Participant jurek = this.generateBasicParticipantToRandomGroup(nicknames.get(rand.nextInt(i+1)) + (char)(rand.nextInt(26) + 'a'));
-            Participant anmcymon = this.generateBasicParticipantToRandomGroup(nicknames.get(rand.nextInt(i+1)) + (char)(rand.nextInt(26) + 'a'));
-            Participant jurczyson = this.generateBasicParticipantToRandomGroup(nicknames.get(rand.nextInt(i+1)) + (char)(rand.nextInt(26) + 'a'));
-            this.participants.addAll(
-                    Arrays
-                            .asList(
-                                    lol1,
-                                    andrzej1,
-                                    mnarek,
-                                    lewislaw,
-                                    barek,
-                                    jurek,
-                                    anmcymon,
-                                    jurczyson));
-
+        List<String> nicknames = Arrays.asList("lol1lol1", "andrzej1", "mnarekkk", "lewislaw", "barekkk", "jurekkk", "anmcymon", "jurczyson",
+                "1lol1lol1", "1andrzej1", "1mnarekkk", "1lewislaw", "1barekkk", "1jurekkk", "1anmcymon", "1jurczyson");
+        for (int i = 1; i < nicknames.size(); i++) {
+            for (Group group : this.groups) {
+                Participant part = this.generateBasicParticipantToRandomGroup(nicknames.get(i), group);
+                this.participants.add(part);
+            }
         }
         this.participants = participantRepository.saveAll(this.participants);
     }
 
-    private Participant generateBasicParticipantToRandomGroup(String nickaname) {
+    private Participant generateBasicParticipantToRandomGroup(String nickaname, Group group) {
         Participant participant = new Participant();
         participant.setNickname(nickaname);
         participant.setEnabled(true);
         participant.setUser(this.users.get(rand.nextInt(users.size()-1)));
-        participant.setGroup(this.groups.get(rand.nextInt(groups.size()-1)));
+        participant.setGroup(group);
         participant.getGroup().setParticipantCount(
                 participant.getGroup().getParticipantCount()+1
         );
@@ -150,7 +134,8 @@ public class StartUp implements CommandLineRunner {
         Group cos = this.generateGroup("cos");
         Group group1 = this.generateGroup("group1");
         Group group2 = this.generateGroup("group2 cos tam cos tam");
-        this.groups = groupRepository.saveAll(Arrays.asList(gupa, cos, group1, group2));
+        Group group3 = this.generateGroup("Porzadna grupa");
+        this.groups = groupRepository.saveAll(Arrays.asList(gupa, cos, group1, group2, group3));
     }
 
     private Group generateGroup(String nazwa) {

@@ -26,7 +26,7 @@ public class RegisterRequest {
     private String repassword;
 
     public User toUser(PasswordEncoder encoder)throws WrongCredentialsException {
-        if (this.password != this.repassword) {
+        if (!this.password.equals(this.repassword)) {
             throw new WrongCredentialsException("Password is not the same");
         }
         User user = new User();
