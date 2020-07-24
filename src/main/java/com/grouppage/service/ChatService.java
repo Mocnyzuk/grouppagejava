@@ -1,10 +1,7 @@
 package com.grouppage.service;
 
-import com.grouppage.concurency.Process;
-import com.grouppage.concurency.ProcessBuilder;
 import com.grouppage.domain.entity.Group;
 import com.grouppage.domain.entity.Participant;
-import com.grouppage.domain.entity.User;
 import com.grouppage.domain.entity.chat.Conversation;
 import com.grouppage.domain.entity.chat.PrivateMessage;
 import com.grouppage.domain.notmapped.SocketMessage;
@@ -18,10 +15,10 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,13 +27,17 @@ public class ChatService {
     private final ParticipantRepository participantRepository;
     private final ConversationRepository conversationRepository;
     private final PrivateMessageRepository privateMessageRepository;
+    private final ExecService execService;
+
 
     public ChatService(ParticipantRepository participantRepository,
                        ConversationRepository conversationRepository,
-                       PrivateMessageRepository privateMessageRepository) {
+                       PrivateMessageRepository privateMessageRepository,
+                       ExecService execService) {
         this.participantRepository = participantRepository;
         this.conversationRepository = conversationRepository;
         this.privateMessageRepository = privateMessageRepository;
+        this.execService = execService;
     }
 
 
@@ -65,29 +66,38 @@ public class ChatService {
         }
         Principal user = (Principal)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Participant> participants = participantRepository.findAllByUserId(user.getId());
-        List<Group> groups = participants.parallelStream()
-                        .map(Participant::getGroup)
-                        .collect(Collectors.toList());
-        List<Conversation> conversations = conversationRepository.findAllByParticipantsIn(participants);
-        List<Participant> fromConvs = conversations.parallelStream()
-                .flatMap(p -> p.getParticipants().stream()).collect(Collectors.toList());
-        CountDownLatch latch = new CountDownLatch(2);
-        ConcurrencyService con = new ConcurrencyService(
-                ProcessBuilder.create()
-                        .withLatch(latch)
-                        .withClass(List.class)
-                        .withObject(participantRepository)
-                        .withMethod("findAllByParticipantsIn")
-                        .withParams(participants)
-                        .build(),
-                ProcessBuilder.create()
-                        .withLatch(latch)
-                        .withClass(List.class)
-                        .withObject(participantRepository)
-                        .withMethod("findAllByGroupIn")
-                        .withParams(groups)
-                        .build());
 
+        Future<List<Group>> futureGroups = execService.executeCallable( () -> participants.stream()
+                .map(Participant::getGroup)
+                .collect(Collectors.toList()));
+
+        Future<List<Conversation>> futureConversations = execService.executeCallable(
+                () -> conversationRepository.findAllByParticipantsIn(participants)
+        );
+
+
+
+        Future<List<Participant>> futurePartiFromGroups = execService.executeCallable(
+                () ->   participantRepository.findAllByGroupIn(futureGroups.get())
+        );
+        Future<List<Participant>> futurePartiFromParti = execService.executeCallable(
+                () -> futureConversations.get().stream().flatMap(p -> p.getParticipants().stream()).collect(Collectors.toList())
+        );
+
+        List<Long> userId = new ArrayList<>();
+        try {
+            List<Participant> participants1 = futurePartiFromGroups.get();
+            participants1.addAll(futurePartiFromParti.get());
+            userId = participants1.stream()
+                    .map(p -> p.getUser().getId()).distinct().collect(Collectors.toList());
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        for (Long aLong : userId) {
+            execService.executeRunnable(
+                    () -> simpMessagingTemplate.convertAndSend("/topic/" + aLong, socketMessage)
+            );
+        }
 
         return null;
     }
