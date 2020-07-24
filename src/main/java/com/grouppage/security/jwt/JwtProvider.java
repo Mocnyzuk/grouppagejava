@@ -23,6 +23,7 @@ import java.util.List;
 public class JwtProvider {
 
     private final String ROLES_KEY = "roles";
+    private final String USER_ID = "id";
     private final String secretKey;
     private final long accessTokenExpirationTime;
     private final long refreshTokenExpirationTime;
@@ -65,6 +66,13 @@ public class JwtProvider {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+    public String getId(String token) {
+        return Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody()
+                .get(this.USER_ID, String.class);
     }
     public List<GrantedAuthority> getRoles(String token){
         // TODO check if it works
@@ -114,6 +122,7 @@ public class JwtProvider {
     private Claims generateClaimsFromUser(User user){
         Claims claims = Jwts.claims().setSubject(user.getEmail());
         claims.put(this.ROLES_KEY, user.getAuthorities());
+        claims.put(this.USER_ID, user.getId());
         return claims;
     }
 

@@ -49,26 +49,7 @@ public class AuthService {
         HttpHeaders headers = this.generateCookieWithNewTokens();
         return ResponseEntity.accepted().headers(headers).build();
     }
-    private User getUserFromContext()throws UsernameNotFoundException{
-        Object objectPrincipal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String email;
-        if(objectPrincipal instanceof UserDetails) {
-            email = ((UserDetails) objectPrincipal).getUsername();
-        }else {
-            email = objectPrincipal.toString();
-        }
-            return userRepository.findByEmail(email)
-                    .orElseThrow(() -> new UsernameNotFoundException("User with email "+ email+" doesnt exists!"));
-    }
-    private HttpHeaders generateCookieWithNewTokens(){
-        HttpHeaders headers = new HttpHeaders();
-        User user = this.getUserFromContext();
-        Token access = jwtProvider.generateToken(user, true);
-        Token refresh = jwtProvider.generateToken(user, false);
-        headers.add(HttpHeaders.SET_COOKIE, jwtProvider.generateCookieFromToken(access).toString());
-        headers.add(HttpHeaders.SET_COOKIE, jwtProvider.generateCookieFromToken(refresh).toString());
-        return headers;
-    }
+
 
     public void signUp(RegisterRequest registerRequest)throws UsernameAlreadyExists {
         if (!userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
@@ -81,6 +62,30 @@ public class AuthService {
         HttpHeaders removeCookiesHeader =
                 this.jwtProvider.deleteJwtCookies();
         return ResponseEntity.noContent().headers(removeCookiesHeader).build();
+    }
+
+    /**
+     * Class level logic
+     */
+    private User getUserFromContext()throws UsernameNotFoundException{
+        Object objectPrincipal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String email;
+        if(objectPrincipal instanceof UserDetails) {
+            email = ((UserDetails) objectPrincipal).getUsername();
+        }else {
+            email = objectPrincipal.toString();
+        }
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User with email "+ email+" doesnt exists!"));
+    }
+    private HttpHeaders generateCookieWithNewTokens(){
+        HttpHeaders headers = new HttpHeaders();
+        User user = this.getUserFromContext();
+        Token access = jwtProvider.generateToken(user, true);
+        Token refresh = jwtProvider.generateToken(user, false);
+        headers.add(HttpHeaders.SET_COOKIE, jwtProvider.generateCookieFromToken(access).toString());
+        headers.add(HttpHeaders.SET_COOKIE, jwtProvider.generateCookieFromToken(refresh).toString());
+        return headers;
     }
 }
 

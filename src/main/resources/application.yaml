@@ -18,3 +18,7 @@ security:
       expiration: ${JWT_EXP}
       refresh:
         expiration: ${JWT_REF_EXP}
+logging:
+  level:
+    org.springframework.data.couchbase.repository.query: DEBUG
+    web: DEBUG

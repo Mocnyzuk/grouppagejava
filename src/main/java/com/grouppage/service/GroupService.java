@@ -1,4 +1,4 @@
-package com.grouppage.service.group;
+package com.grouppage.service;
 
 import com.grouppage.domain.entity.Group;
 import com.grouppage.domain.entity.Post;
@@ -14,14 +14,14 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class ApiGroupService {
+public class GroupService {
 
     private final GroupRepository groupRepository;
     private final PostRepository postRepository;
     private final ParticipantRepository participantRepository;
 
     @Autowired
-    public ApiGroupService(GroupRepository groupRepository, PostRepository postRepository, ParticipantRepository participantRepository) {
+    public GroupService(GroupRepository groupRepository, PostRepository postRepository, ParticipantRepository participantRepository) {
         this.groupRepository = groupRepository;
         this.postRepository = postRepository;
         this.participantRepository = participantRepository;
