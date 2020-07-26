@@ -2,11 +2,16 @@ package com.grouppage.web.socket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grouppage.domain.entity.Participant;
+import com.grouppage.domain.entity.chat.Conversation;
 import com.grouppage.domain.entity.chat.PrivateMessage;
 import com.grouppage.domain.notmapped.SocketMessage;
+import com.grouppage.domain.repository.chat.ConversationRepository;
+import com.grouppage.domain.repository.chat.PrivateMessageRepository;
 import com.grouppage.domain.response.LoginRequest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.AbstractNestablePropertyAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,6 +21,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.*;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -41,6 +47,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SocketControllerTest {
 
     public static final String WEBSOCKET_URI = "ws://localhost:{port}/websocketApp";
@@ -48,6 +56,10 @@ class SocketControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private ConversationRepository conversationRepository;
+    @Autowired
+    private PrivateMessageRepository privateMessageRepository;
 
     public static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -79,10 +91,6 @@ class SocketControllerTest {
     void createNewConversationAndSendAMessageToListeningUser() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Throwable> failure = new AtomicReference<>();
-
-
-
-
         StompSessionHandler handler = new TestSessionHandler(failure){
             @Override
             public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
@@ -120,20 +128,10 @@ class SocketControllerTest {
                             )
                     )
                             .andExpect(status().isCreated());
-                    //session.send("/app/conversation/22/sendmessage", new SocketMessage(59, "Pierwsza wiadomosc", SocketMessage.Type.CHAT));
                 } catch (Exception e) {
                     failure.set(e);
                     latch.countDown();
                 }
-
-//                try {
-//                    // Step 3:  Simulate sending in a message from the client to the server
-//                    SocketMessage myMessage = new SocketMessage(75, "Pierwsza wiadomosc", SocketMessage.Type.CHAT);
-//                    session.send("/app/conversation/13/sendmessage", myMessage);
-//                } catch (Throwable t) {
-//                    failure.set(t);
-//                    latch.countDown();
-//                }
             }
         };
         this.stompClient.connect(
@@ -141,9 +139,7 @@ class SocketControllerTest {
                 this.headers,
                 handler,
                 this.port);
-
-
-        if (latch.await(8, TimeUnit.SECONDS)) {
+        if (latch.await(3, TimeUnit.SECONDS)) {
             if (failure.get() != null) {
                 throw new AssertionError("", failure.get());
             }
@@ -154,6 +150,16 @@ class SocketControllerTest {
 
     }
 
+    @AfterAll
+    void deleteInserdetThings(){
+        List<Conversation> convs = conversationRepository.findAll();
+        convs.stream().filter(c -> c.getId()!=1L).forEach(c -> {
+            privateMessageRepository.deleteAll(privateMessageRepository.findAllByConversation(c));
+            c.setParticipants(null);
+            conversationRepository.save(c);
+            conversationRepository.delete(c);
+        });
+    }
 
     private class TestSessionHandler extends StompSessionHandlerAdapter {
 
