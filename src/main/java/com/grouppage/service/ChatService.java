@@ -42,7 +42,6 @@ public class ChatService {
     private final SimpMessagingTemplate simpMessagingTemplate;
 
 
-    private final SimpMessageSendingOperations simpMessageSendingOperations;
 
 
     private final ExecService execService;
@@ -56,14 +55,12 @@ public class ChatService {
                        PrivateMessageRepository privateMessageRepository,
                        GroupRepository groupRepository,
                        PostRepository postRepository, SimpMessagingTemplate simpMessagingTemplate,
-                       SimpMessageSendingOperations simpMessageSendingOperations,
                        ExecService execService) {
         this.participantRepository = participantRepository;
         this.conversationRepository = conversationRepository;
         this.privateMessageRepository = privateMessageRepository;
         this.groupRepository = groupRepository;
         this.postRepository = postRepository;
-        this.simpMessageSendingOperations = simpMessageSendingOperations;
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.execService = execService;
     }
@@ -174,8 +171,7 @@ public class ChatService {
         for (Long userId : userIds) {
             execService.executeRunnable(
                     () -> {
-                        //this.simpMessagingTemplate.convertAndSend("/topic/" + userId, message);
-                        this.simpMessageSendingOperations.convertAndSend("/topic/" + userId, message);
+                        this.simpMessagingTemplate.convertAndSend("/topic/" + userId, message);
                     }
             );
         }
