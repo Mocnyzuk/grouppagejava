@@ -15,20 +15,21 @@ function connect(event) {
     event.preventDefault();
 }
 function connectionSuccess() {
-    stompClient.subscribe('/topic/test', onMessageReceived);
-    stompClient.send("/app/chat.newUser", {}, JSON.stringify({
-        sender : name,
-        type : 'newUser'
-    }))
+    stompClient.subscribe('/topic/1', onMessageReceived);
+    // stompClient.send("/app/conversation/22/sendmessage", {}, JSON.stringify({
+    //     participantId : name,
+    //     type : 'newUser'
+    // }))
 }
 function sendMessage(event) {
     var messageContent = document.querySelector('#chatMessage').value.trim();
     if (messageContent && stompClient) {
         var chatMessage = {
-            sender : name,
+            participantId : 59,
             content : document.querySelector('#chatMessage').value,
             type : 'CHAT'
-        };		stompClient.send("/app/chat.sendMessage", {}, JSON
+        };
+        stompClient.send("/app/conversation/22/sendmessage", {}, JSON
             .stringify(chatMessage));
         document.querySelector('#chatMessage').value = '';
     }
@@ -37,22 +38,15 @@ function sendMessage(event) {
 function onMessageReceived(payload) {
     var message = JSON.parse(payload.body);
     var messageElement = document.createElement('li');
-    if (message.type === 'newUser') {
-        messageElement.classList.add('event-data');
-        message.content = message.sender + 'has joined the chat';
-    } else if (message.type === 'Leave') {
-        messageElement.classList.add('event-data');
-        message.content = message.sender + 'has left the chat';
-    } else {
-        messageElement.classList.add('message-data');
-        var element = document.createElement('i');
-        var text = document.createTextNode(message.sender[0]);
-        element.appendChild(text);		messageElement.appendChild(element);
-        var usernameElement = document.createElement('span');
-        var usernameText = document.createTextNode(message.sender);
-        usernameElement.appendChild(usernameText);
-        messageElement.appendChild(usernameElement);
-    }
+    messageElement.classList.add('message-data');
+    var element = document.createElement('i');
+    var text = document.createTextNode(message.participantId[0]);
+    element.appendChild(text);
+    messageElement.appendChild(element);
+    var usernameElement = document.createElement('span');
+    var usernameText = document.createTextNode(message.participantId);
+    usernameElement.appendChild(usernameText);
+    messageElement.appendChild(usernameElement);
     var textElement = document.createElement('p');
     var messageText = document.createTextNode(message.content);
     textElement.appendChild(messageText);

@@ -18,6 +18,7 @@ import com.grouppage.exception.GroupNotFoundException;
 import com.grouppage.exception.ParticipantNotFountException;
 import com.grouppage.exception.WrongDataPostedException;
 import com.grouppage.service.auth.Principal;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,11 @@ public class ChatService {
     private final PostRepository postRepository;
 
     private final SimpMessagingTemplate simpMessagingTemplate;
+
+
+    private final SimpMessageSendingOperations simpMessageSendingOperations;
+
+
     private final ExecService execService;
 
     private final String HASH = "H";
@@ -49,12 +55,14 @@ public class ChatService {
                        PrivateMessageRepository privateMessageRepository,
                        GroupRepository groupRepository,
                        PostRepository postRepository, SimpMessagingTemplate simpMessagingTemplate,
+                       SimpMessageSendingOperations simpMessageSendingOperations,
                        ExecService execService) {
         this.participantRepository = participantRepository;
         this.conversationRepository = conversationRepository;
         this.privateMessageRepository = privateMessageRepository;
         this.groupRepository = groupRepository;
         this.postRepository = postRepository;
+        this.simpMessageSendingOperations = simpMessageSendingOperations;
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.execService = execService;
     }
@@ -165,7 +173,8 @@ public class ChatService {
         for (Long userId : userIds) {
             execService.executeRunnable(
                     () -> {
-                        this.simpMessagingTemplate.convertAndSend("/topic/" + userId, message);
+                        //this.simpMessagingTemplate.convertAndSend("/topic/" + userId, message);
+                        this.simpMessageSendingOperations.convertAndSend("/topic/" + userId, message);
                     }
             );
         }

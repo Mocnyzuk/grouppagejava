@@ -87,7 +87,7 @@ class SocketControllerTest {
             @Override
             public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
                 // Step 2: Simulate the client subscribing to a topic
-                session.subscribe("/topic/2", new StompFrameHandler() {
+                session.subscribe("/topic/1", new StompFrameHandler() {
 
                     @Override
                     public Type getPayloadType(StompHeaders headers) {
@@ -99,6 +99,7 @@ class SocketControllerTest {
                     public void handleFrame(StompHeaders headers, Object payload) {
                         SocketMessage greeting = (SocketMessage) payload;
                         try {
+                            int i = 10;
                             // Step 4:  Validate that the broadcast server response is correct
                             assertEquals("Pierwsza wiadomosc", greeting.getContent());
                         } catch (Throwable t) {
@@ -119,7 +120,7 @@ class SocketControllerTest {
                             )
                     )
                             .andExpect(status().isCreated());
-                    session.send("/app/conversation/22/sendmessage", new SocketMessage(59, "Pierwsza wiadomosc", SocketMessage.Type.CHAT));
+                    //session.send("/app/conversation/22/sendmessage", new SocketMessage(59, "Pierwsza wiadomosc", SocketMessage.Type.CHAT));
                 } catch (Exception e) {
                     failure.set(e);
                     latch.countDown();
@@ -142,7 +143,7 @@ class SocketControllerTest {
                 this.port);
 
 
-        if (latch.await(5, TimeUnit.SECONDS)) {
+        if (latch.await(8, TimeUnit.SECONDS)) {
             if (failure.get() != null) {
                 throw new AssertionError("", failure.get());
             }

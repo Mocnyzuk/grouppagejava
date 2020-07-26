@@ -35,6 +35,7 @@ public class SocketController {
     }
 
     @MessageMapping("/conversation/{id}/sendmessage")
+//    @SendTo("/topic/test")
     public void sendMessage(
             @Payload SocketMessage socketMessage,
             @DestinationVariable String id
