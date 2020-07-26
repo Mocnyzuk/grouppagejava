@@ -14,4 +14,6 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     List<Participant> findAllByUserId(long id);
 
     List<Participant> findAllByGroupIn(Iterable<Group> groups);
+
+    List<Participant> findAllByGroupId(long id);
 }

@@ -5,6 +5,7 @@ import com.grouppage.domain.notmapped.SocketMessage;
 import com.grouppage.service.ChatService;
 import com.grouppage.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Controller;
 
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 
 @Controller
@@ -32,20 +34,20 @@ public class SocketController {
         this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
-    @MessageMapping("/conversation/{id}/sendMessage")
+    @MessageMapping("/conversation/{id}/sendmessage")
     public void sendMessage(
-            @Payload SocketMessage socketMessage
-            ){
-        SocketMessage resposne = this.chatService.processNewPrivateMessage(socketMessage, simpMessagingTemplate);
-        //simpMessagingTemplate.convertAndSend("/topic/{userId}", socketMessage);
+            @Payload SocketMessage socketMessage,
+            @DestinationVariable long conversationId
+            ) throws ExecutionException, InterruptedException {
+        this.chatService.processNewPrivateMessage(socketMessage, conversationId, this.simpMessagingTemplate);
     }
 
-    @MessageMapping("/group/{id}/newPost")
-    @SendTo("/topic/conversation/{id}")
+    @MessageMapping("/group/{id}/sendpost")
     public SocketMessage newUser(
-            @Payload SocketMessage socketMessage
+            @Payload SocketMessage socketMessage,
+            @DestinationVariable long groupId
             ){
-//        groupService.handleNewPostFromSocket(socketMessage);
+        this.chatService.processNewGroupPost(socketMessage, groupId, this.simpMessagingTemplate);
         return socketMessage;
     }
 }

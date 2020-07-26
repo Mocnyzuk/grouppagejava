@@ -7,7 +7,6 @@ public class SocketMessage {
 
     private long participantId;
     private String content;
-    private long destinationId;
     private Type type;
 
     public enum Type{
