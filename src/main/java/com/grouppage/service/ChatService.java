@@ -9,21 +9,19 @@ import com.grouppage.domain.notmapped.HashTag;
 import com.grouppage.domain.notmapped.SocketMessage;
 import com.grouppage.domain.repository.GroupRepository;
 import com.grouppage.domain.repository.ParticipantRepository;
+import com.grouppage.domain.repository.PostRepository;
 import com.grouppage.domain.repository.chat.ConversationRepository;
 import com.grouppage.domain.repository.chat.PrivateMessageRepository;
-import com.grouppage.domain.response.PostedMessage;
+import com.grouppage.domain.response.AddParticipantRequest;
 import com.grouppage.exception.ConversationNotFoundException;
 import com.grouppage.exception.GroupNotFoundException;
 import com.grouppage.exception.ParticipantNotFountException;
 import com.grouppage.exception.WrongDataPostedException;
 import com.grouppage.service.auth.Principal;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +35,7 @@ public class ChatService {
     private final ConversationRepository conversationRepository;
     private final PrivateMessageRepository privateMessageRepository;
     private final GroupRepository groupRepository;
+    private final PostRepository postRepository;
 
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final ExecService execService;
@@ -49,33 +48,32 @@ public class ChatService {
                        ConversationRepository conversationRepository,
                        PrivateMessageRepository privateMessageRepository,
                        GroupRepository groupRepository,
-                       SimpMessagingTemplate simpMessagingTemplate,
+                       PostRepository postRepository, SimpMessagingTemplate simpMessagingTemplate,
                        ExecService execService) {
         this.participantRepository = participantRepository;
         this.conversationRepository = conversationRepository;
         this.privateMessageRepository = privateMessageRepository;
         this.groupRepository = groupRepository;
+        this.postRepository = postRepository;
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.execService = execService;
     }
 
 
-    public void handleNewChat(PostedMessage postedMessage, String receiver) throws WrongDataPostedException {
-        if(!receiver.isEmpty() && null != postedMessage){
+    public void handleNewChat(SocketMessage socketMessage, String receiver) throws WrongDataPostedException, ExecutionException, InterruptedException {
+        if(!receiver.isEmpty() && null == socketMessage){
             throw new WrongDataPostedException("Posted data is invalid!");
         }
         Conversation conversation = new Conversation();
-        Participant first = participantRepository.findById(postedMessage.getSenderId())
-                .orElseThrow(() -> new WrongDataPostedException("Posted data is invalid!"));
-        Participant second = participantRepository.findById(Long.parseLong(receiver))
-                .orElseThrow(() -> new WrongDataPostedException("Posted data is invalid!"));
-        conversation.setParticipants(Arrays.asList(first, second));
-        conversation = conversationRepository.save(conversation);
-        PrivateMessage privateMessage = new PrivateMessage();
-        privateMessage.setConversation(conversation);
-        privateMessage.setContent(postedMessage.getContent());
-        privateMessage.setSender(first);
-        privateMessageRepository.save(privateMessage);
+        Future<Participant> first = execService.executeCallable(() -> participantRepository.findById(socketMessage.getParticipantId())
+            .orElseThrow(() -> new WrongDataPostedException("Posted data is invalid!")));
+        Future<Participant> second = execService.executeCallable(() -> participantRepository.findById(Long.parseLong(receiver))
+            .orElseThrow(() -> new WrongDataPostedException("Posted data is invalid!")));
+        List<Participant> partis = Arrays.asList(first.get(), second.get());
+
+        conversation.setParticipants(partis);
+        Conversation conv = conversationRepository.save(conversation);
+        this.processNewPrivateMessage(socketMessage, conv.getId());
     }
 
     public void processNewPrivateMessage(SocketMessage socketMessage,
@@ -103,11 +101,16 @@ public class ChatService {
         );
 
         List<Long> userIds = fromConv.stream().map(p -> p.getUser().getId()).distinct().collect(Collectors.toList());
-        this.sendMessageOrPost(userIds, messageFuture.get());
+        this.sendMessageOrPost(userIds, socketMessage);
+        execService.executeCallable(() -> privateMessageRepository.save(messageFuture.get()));
 
     }
     public void processNewGroupPost(SocketMessage socketMessage,
-                                    long groupId) throws ExecutionException, InterruptedException {
+                                    long groupId) throws ExecutionException, InterruptedException, WrongDataPostedException {
+        if(socketMessage.getType() != SocketMessage.Type.GROUP){
+            throw new WrongDataPostedException("Message is not a post for group!");
+        }
+
         Future<List<HashTag>> hashTags = this.getHashTagsFromPost(socketMessage.getContent());
         Future<Group> groupFuture = execService.executeCallable(
                 () -> this.groupRepository.findById(groupId).orElseThrow(
@@ -129,8 +132,11 @@ public class ChatService {
                     return message;
                 }
         );
+
         List<Long> userIds = participantFuture.get().stream().map(p -> p.getUser().getId()).distinct().collect(Collectors.toList());
-        this.sendMessageOrPost(userIds, messageFuture.get());
+
+        this.sendMessageOrPost(userIds, socketMessage);
+        execService.executeCallable(() -> postRepository.save(messageFuture.get()));
     }
 
     private Future<List<HashTag>> getHashTagsFromPost(String post){
@@ -155,12 +161,11 @@ public class ChatService {
             return hashtags;
         });
     }
-    private void sendMessageOrPost(List<Long> userIds, Object message){
+    private void sendMessageOrPost(List<Long> userIds, SocketMessage message){
         for (Long userId : userIds) {
-            execService.executeCallable(
+            execService.executeRunnable(
                     () -> {
                         this.simpMessagingTemplate.convertAndSend("/topic/" + userId, message);
-                        return null;
                     }
             );
         }
@@ -204,10 +209,21 @@ public class ChatService {
         }
         for (Long aLong : userId) {
             execService.executeRunnable(
-                    () -> simpMessagingTemplate.convertAndSend("/topic/" + aLong, socketMessage)
+                    () -> simpMessagingTemplate.convertAndSend(String.format("%s%s","/topic/", String.valueOf(aLong)), socketMessage)
             );
         }
     }
 
 
+    public void addNewParticipantToConversation(AddParticipantRequest request) throws ExecutionException, InterruptedException {
+        Future<Conversation> futureConv = execService.executeCallable(()->conversationRepository.findById(request.getConversationId())
+        .orElseThrow(() -> new ConversationNotFoundException("Conversation with id: "+request.getConversationId()+ " doesnt exists!")));
+        Future<Participant> futurePart = execService.executeCallable(()->participantRepository.findById(request.getParticipantId())
+        .orElseThrow(() -> new ParticipantNotFountException("Participant with id: "+ request.getParticipantId()+" doesnt exists!")));
+        Conversation conv = futureConv.get();
+        List<Participant> fromConv = conv.getParticipants();
+        fromConv.add(futurePart.get());
+        conv.setParticipants(fromConv);
+        conversationRepository.save(futureConv.get());
+    }
 }

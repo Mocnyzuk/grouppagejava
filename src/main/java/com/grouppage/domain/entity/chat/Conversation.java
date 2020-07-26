@@ -27,7 +27,7 @@ public class Conversation extends AbstractEntityDate {
 
 
     @Size(min = 1, max = 5)
-    @ManyToMany(targetEntity = Participant.class)
+    @ManyToMany(targetEntity = Participant.class, fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private List<Participant> participants;
 
 }

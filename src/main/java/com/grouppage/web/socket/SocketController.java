@@ -23,31 +23,31 @@ public class SocketController {
 
     private final ChatService chatService;
     private final GroupService groupService;
-    private final SimpMessagingTemplate simpMessagingTemplate;
+
+//    @Autowired
+//    private SimpMessagingTemplate simpMessagingTemplate;
 
     @Autowired
     public SocketController(ChatService chatService,
-                            GroupService groupService,
-                            SimpMessagingTemplate simpMessagingTemplate) {
+                            GroupService groupService) {
         this.chatService = chatService;
         this.groupService = groupService;
-        this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
     @MessageMapping("/conversation/{id}/sendmessage")
     public void sendMessage(
             @Payload SocketMessage socketMessage,
-            @DestinationVariable long conversationId
+            @DestinationVariable String id
             ) throws ExecutionException, InterruptedException {
-        this.chatService.processNewPrivateMessage(socketMessage, conversationId, this.simpMessagingTemplate);
+        this.chatService.processNewPrivateMessage(socketMessage, Long.parseLong(id));
+        //this.simpMessagingTemplate.convertAndSend("/topic/test", socketMessage);
     }
 
     @MessageMapping("/group/{id}/sendpost")
-    public SocketMessage newUser(
+    public void newPost(
             @Payload SocketMessage socketMessage,
-            @DestinationVariable long groupId
-            ){
-        this.chatService.processNewGroupPost(socketMessage, groupId, this.simpMessagingTemplate);
-        return socketMessage;
+            @DestinationVariable String id
+            ) throws ExecutionException, InterruptedException {
+        this.chatService.processNewGroupPost(socketMessage, Long.parseLong(id));
     }
 }

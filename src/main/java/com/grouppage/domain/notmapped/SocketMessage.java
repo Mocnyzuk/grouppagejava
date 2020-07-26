@@ -1,8 +1,10 @@
 package com.grouppage.domain.notmapped;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class SocketMessage {
 
     private long participantId;
