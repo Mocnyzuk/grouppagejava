@@ -68,7 +68,7 @@ public class AuthService {
     public void signUp(RegisterRequest registerRequest)throws UsernameAlreadyExists {
         if (!userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
             User user = userRepository.save(registerRequest.toUser(this.passwordEncoder));
-            this.eventPublisher.publishEvent(new RegistrationEvent(user));
+            //this.eventPublisher.publishEvent(new RegistrationEvent(user));
             return;
         }
         throw new UsernameAlreadyExists("This email is taken!");

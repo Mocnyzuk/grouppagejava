@@ -37,7 +37,7 @@ class AuthControllerTest {
     @Autowired
     private UserRepository userRepository;
 
-    static String fpmolesToken = "Bearer ";
+    public static String fpmolesToken = "Bearer ";
     public static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Autowired
@@ -58,12 +58,12 @@ class AuthControllerTest {
                         )
                 )
                 .andExpect(status().isAccepted())
-                .andDo(print())
                 .andReturn();
         String accessCookie = result
                 .getResponse()
-                .getHeader(SET_COOKIE);
-        fpmolesToken = fpmolesToken.concat(accessCookie.substring(accessCookie.indexOf("=")+1, accessCookie.indexOf(";")));
+                .getCookie("accessToken")
+                .getValue();
+        fpmolesToken = "Bearer ".concat(accessCookie);
     }
 
     @Test
@@ -108,6 +108,18 @@ class AuthControllerTest {
         assertNotNull(user);
         assertEquals("123123123", user.getPhone());
         assertFalse(user.isActivated());
+    }
+
+    @Test
+    void logOutFromFpMoles() throws Exception {
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/logout")
+                .header(HttpHeaders.AUTHORIZATION, fpmolesToken)
+        )
+                .andExpect(status().isNoContent())
+                .andDo(print())
+                .andReturn();
+        assertEquals(0, result.getResponse().getCookie("accessToken").getMaxAge());
     }
 
     @AfterAll

@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.concurrent.ExecutionException;
+
 @RestController
 @RequestMapping("/api")
 public class AuthController {
@@ -23,7 +25,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Void> login(
             @RequestBody LoginRequest loginRequest
-    )throws WrongCredentialsException  {
+    ) throws WrongCredentialsException, ExecutionException, InterruptedException {
         return authService.signIn(loginRequest);
     }
 
@@ -42,7 +44,7 @@ public class AuthController {
 
     }
 
-    @GetMapping("/api/actiate")
+    @GetMapping("/activate")
     public ResponseEntity<Void> activateAccount(
             @RequestParam("id") String uuid
     ){
