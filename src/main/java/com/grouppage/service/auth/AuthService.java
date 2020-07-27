@@ -7,6 +7,7 @@ import com.grouppage.domain.response.LoginRequest;
 import com.grouppage.domain.response.RegisterRequest;
 import com.grouppage.event.RegistrationEvent;
 import com.grouppage.exception.UsernameAlreadyExists;
+import com.grouppage.exception.WrongDataPostedException;
 import com.grouppage.security.jwt.JwtProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
@@ -23,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -96,6 +98,16 @@ public class AuthService {
         headers.add(HttpHeaders.SET_COOKIE, jwtProvider.generateCookieFromToken(access).toString());
         headers.add(HttpHeaders.SET_COOKIE, jwtProvider.generateCookieFromToken(refresh).toString());
         return headers;
+    }
+
+    public void activateAccount(String uuid) throws WrongDataPostedException{
+        Optional<User> optional = this.userRepository.findByResetPasswordToken(uuid);
+        if(optional.isPresent()){
+            optional.get().setActivated(true);
+            this.userRepository.save(optional.get());
+        }else{
+            throw new WrongDataPostedException("Invalid activation token");
+        }
     }
 }
 

@@ -41,4 +41,12 @@ public class AuthController {
         return authService.signOut();
 
     }
+
+    @GetMapping("/api/actiate")
+    public ResponseEntity<Void> activateAccount(
+            @RequestParam("id") String uuid
+    ){
+        this.authService.activateAccount(uuid);
+        return ResponseEntity.accepted().build();
+    }
 }
