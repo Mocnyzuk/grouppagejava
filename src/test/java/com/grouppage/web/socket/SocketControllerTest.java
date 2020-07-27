@@ -95,7 +95,7 @@ class SocketControllerTest {
             @Override
             public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
                 // Step 2: Simulate the client subscribing to a topic
-                session.subscribe("/topic/1", new StompFrameHandler() {
+                session.subscribe("/topic/5", new StompFrameHandler() {
 
                     @Override
                     public Type getPayloadType(StompHeaders headers) {
