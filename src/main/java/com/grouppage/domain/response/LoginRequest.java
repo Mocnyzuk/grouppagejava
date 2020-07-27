@@ -14,6 +14,9 @@ public class LoginRequest {
     @NotNull(message = "Hasło nie może być puste")
     private String password;
 
+    public LoginRequest() {
+    }
+
     public LoginRequest(@NotBlank(message = "Email nie może być pusty") String email,
                         @NotBlank(message = "Hasło nie może być puste") String password) {
         this.email = email;

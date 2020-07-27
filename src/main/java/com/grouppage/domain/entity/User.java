@@ -46,6 +46,7 @@ public class User extends AbstractEntityDate{
     @Nullable
     private String resetPasswordToken;
 
+
     @Convert(converter = AuthoritiesConverter.class)
     private List<SimpleGrantedAuthority> authorities;
 

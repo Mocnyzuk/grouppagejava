@@ -1,4 +1,4 @@
-package com.grouppage.listener;
+package com.grouppage.event.listener;
 
 import com.grouppage.domain.entity.chat.PrivateMessage;
 import org.springframework.beans.factory.annotation.Autowired;

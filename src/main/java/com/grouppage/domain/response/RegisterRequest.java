@@ -2,7 +2,9 @@ package com.grouppage.domain.response;
 
 import com.grouppage.domain.entity.User;
 import com.grouppage.exception.WrongCredentialsException;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -12,8 +14,11 @@ import javax.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.UUID;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RegisterRequest {
 
     @Email
@@ -31,7 +36,8 @@ public class RegisterRequest {
         }
         User user = new User();
         user.setEmail(this.email);
-        user.setActivated(true);
+        user.setResetPasswordToken(UUID.randomUUID().toString());
+        user.setActivated(false);
         user.setAuthorities(Collections.singletonList(
                 new SimpleGrantedAuthority("ROLE_USER")));
         user.setPhone(this.phone);

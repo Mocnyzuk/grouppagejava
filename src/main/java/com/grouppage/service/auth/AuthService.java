@@ -5,9 +5,12 @@ import com.grouppage.domain.notmapped.Token;
 import com.grouppage.domain.repository.UserRepository;
 import com.grouppage.domain.response.LoginRequest;
 import com.grouppage.domain.response.RegisterRequest;
+import com.grouppage.event.RegistrationEvent;
 import com.grouppage.exception.UsernameAlreadyExists;
 import com.grouppage.security.jwt.JwtProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,16 +31,18 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final ApplicationEventPublisher eventPublisher;
     private final JwtProvider jwtProvider;
 
     @Autowired
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
-                       JwtProvider jwtProvider) {
+                       ApplicationEventPublisher eventPublisher, JwtProvider jwtProvider) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.eventPublisher = eventPublisher;
         this.jwtProvider = jwtProvider;
     }
 
@@ -57,6 +62,8 @@ public class AuthService {
     public void signUp(RegisterRequest registerRequest)throws UsernameAlreadyExists {
         if (!userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
             User user = userRepository.save(registerRequest.toUser(this.passwordEncoder));
+            this.eventPublisher.publishEvent(new RegistrationEvent(user));
+            return;
         }
         throw new UsernameAlreadyExists("This email is taken!");
     }
