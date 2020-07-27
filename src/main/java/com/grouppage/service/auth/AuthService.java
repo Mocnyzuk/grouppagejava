@@ -88,7 +88,7 @@ public class AuthService {
     /**
      * Class level logic
      */
-    private User getUserFromContext()throws UsernameNotFoundException{
+    public User getUserFromContext()throws UsernameNotFoundException{
         Object objectPrincipal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String email;
         if(objectPrincipal instanceof UserDetails) {

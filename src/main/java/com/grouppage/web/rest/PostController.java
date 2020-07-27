@@ -21,20 +21,20 @@ public class PostController {
         this.groupService = groupService;
     }
 
-    @PostMapping("/upVote/{participant}")
+    @PostMapping("/upvote/{participantId}")
     public ResponseEntity<Post> upVote(
-            @PathVariable Participant participant,
+            @PathVariable long participantId,
             @RequestParam(name = "id") long postId
     ) throws PostNotFoundException {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(this.groupService.upVote(participant, postId));
+                .body(this.groupService.upVote(participantId, postId));
     }
-    @PostMapping("/removeVote/{participant}")
+    @PostMapping("/removevote/{participantId}")
     public ResponseEntity<Post> removeVote(
-            @PathVariable Participant participant,
+            @PathVariable long participantId,
             @RequestParam(name = "id") long postId
     )throws PostNotFoundException{
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(this.groupService.downVote(participant, postId));
+                .body(this.groupService.downVote(participantId, postId));
     }
 }

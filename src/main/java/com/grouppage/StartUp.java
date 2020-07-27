@@ -1,18 +1,18 @@
 package com.grouppage;
 
 import com.grouppage.domain.entity.*;
+import com.grouppage.domain.entity.chat.Conversation;
+import com.grouppage.domain.entity.chat.PrivateMessage;
 import com.grouppage.domain.notmapped.HashTag;
 import com.grouppage.domain.repository.*;
+import com.grouppage.domain.repository.chat.ConversationRepository;
+import com.grouppage.domain.repository.chat.PrivateMessageRepository;
 import com.grouppage.domain.response.RegisterRequest;
-import com.sun.org.apache.regexp.internal.RE;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import javax.mail.Part;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +26,8 @@ public class StartUp implements CommandLineRunner {
     private final GroupRepository groupRepository;
     private final ParticipantRepository participantRepository;
     private final ReactionRepository reactionRepository;
+    private final PrivateMessageRepository privateMessageRepository;
+    private final ConversationRepository conversationRepository;
     private final SignUpFormRepository signUpFormRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -38,12 +40,14 @@ public class StartUp implements CommandLineRunner {
 
     public List<String> categories = Arrays.asList("IT", "KUCHNIA", "CARS", "OSWIETLENIE", "ELEKTRYKA", "METEOROLOGIA", "AEROPLANY");
     //@Autowired
-    public StartUp(UserRepository userRepository, PostRepository postRepository, GroupRepository groupRepository, ParticipantRepository participantRepository, ReactionRepository reactionRepository, SignUpFormRepository signUpFormRepository, PasswordEncoder passwordEncoder) {
+    public StartUp(UserRepository userRepository, PostRepository postRepository, GroupRepository groupRepository, ParticipantRepository participantRepository, ReactionRepository reactionRepository, PrivateMessageRepository privateMessageRepository, ConversationRepository conversationRepository, SignUpFormRepository signUpFormRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.groupRepository = groupRepository;
         this.participantRepository = participantRepository;
         this.reactionRepository = reactionRepository;
+        this.privateMessageRepository = privateMessageRepository;
+        this.conversationRepository = conversationRepository;
         this.signUpFormRepository = signUpFormRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -64,9 +68,27 @@ public class StartUp implements CommandLineRunner {
         this.groups = groupRepository.findAll();
         this.participants = participantRepository.findAll();
         this.users = userRepository.findAll();
-        System.out.println(this.groups.get(1));
-        System.out.println(this.participants.get(1));
-        System.out.println(this.users.get(1));
+        this.loadDefaultConversation();
+        System.out.println("---IM GOING--- 6 done");
+    }
+
+    /**
+     * create default conversation
+     */
+    private void loadDefaultConversation() {
+        Participant p1 = this.participants.get(0);
+        Participant p2 = this.participants.get(6);
+        Conversation conversation = new Conversation();
+        PrivateMessage message = new PrivateMessage();
+        message.setConversation(conversation);
+        message.setSender(p1);
+        message.setType("CHAT");
+        message.setContent("testowa pierwswza wiadoamosc");
+        conversation.setParticipants(Arrays.asList(p1, p2));
+        conversation.setAvatar("bez awatara");
+        conversation.setName("conversation");
+        this.conversationRepository.save(conversation);
+        this.privateMessageRepository.save(message);
     }
 
     /**

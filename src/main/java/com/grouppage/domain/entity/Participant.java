@@ -1,5 +1,7 @@
 package com.grouppage.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -21,10 +23,13 @@ public class Participant extends AbstractEntityDate{
     @NotNull
     private String nickname;
 
-    @ManyToMany(targetEntity = Post.class, fetch = FetchType.EAGER)
+    @OneToMany(targetEntity = Post.class)
+    @JsonIgnoreProperties("author")
     private List<Post> likedPosts = new ArrayList<>();
 
     @OneToOne(targetEntity = User.class)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JsonIgnore
     private User user;
 
     @OneToOne(targetEntity = Group.class)

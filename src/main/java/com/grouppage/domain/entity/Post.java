@@ -1,5 +1,7 @@
 package com.grouppage.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.grouppage.domain.converter.HashTagConverter;
 import com.grouppage.domain.notmapped.HashTag;
 import lombok.Data;
@@ -22,7 +24,9 @@ public class Post extends AbstractEntityDate{
     @ManyToOne(targetEntity = Group.class)
     private Group group;
 
-    @ManyToOne(targetEntity = Participant.class)
+    @OneToOne(targetEntity = Participant.class)
+    @JoinColumn(name = "author_id", referencedColumnName = "id")
+    @JsonIgnoreProperties("likedPosts")
     private Participant author;
 
     // TODO remove SQL injection posiibility
@@ -31,6 +35,7 @@ public class Post extends AbstractEntityDate{
     private String content;
 
     @Convert(converter = HashTagConverter.class)
+    @JsonIgnore
     private List<HashTag> hashTags;
 
     @Column(columnDefinition = "integer default 0")
