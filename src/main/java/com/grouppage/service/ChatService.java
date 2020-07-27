@@ -20,9 +20,11 @@ import com.grouppage.exception.WrongDataPostedException;
 import com.grouppage.service.auth.Principal;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.Access;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,7 +85,7 @@ public class ChatService {
     }
 
     public void processNewPrivateMessage(SocketMessage socketMessage,
-                                        long conversationId) throws WrongDataPostedException, ExecutionException, InterruptedException {
+                                        long conversationId) throws WrongDataPostedException, ExecutionException, InterruptedException, AccessDeniedException {
         if (socketMessage.getType().equals(SocketMessage.Type.GROUP)){
             throw new WrongDataPostedException("Group message posted to private handler!");
         }
@@ -91,6 +93,8 @@ public class ChatService {
                 () -> new ConversationNotFoundException("Conversation doesnt exists with id: "+ conversationId)
         ));
         List<Participant> fromConv = conversationFuture.get().getParticipants();
+        if(fromConv.stream().noneMatch(p -> p.getId() == socketMessage.getParticipantId()))
+            throw new AccessDeniedException("You have no permission do send messages here!");
         Future<PrivateMessage> messageFuture = execService.executeCallable( () -> {
             PrivateMessage message = new PrivateMessage();
             if(socketMessage.getContent() == null){
@@ -112,7 +116,7 @@ public class ChatService {
 
     }
     public void processNewGroupPost(SocketMessage socketMessage,
-                                    long groupId) throws ExecutionException, InterruptedException, WrongDataPostedException {
+                                    long groupId) throws ExecutionException, InterruptedException, WrongDataPostedException, AccessDeniedException {
         if(socketMessage.getType() != SocketMessage.Type.GROUP){
             throw new WrongDataPostedException("Message is not a post for group!");
         }
@@ -138,7 +142,8 @@ public class ChatService {
                     return message;
                 }
         );
-
+        if(participantFuture.get().stream().noneMatch(p -> p.getId() == socketMessage.getParticipantId()))
+            throw new AccessDeniedException("You have no permission do send posts here!");
         List<Long> userIds = participantFuture.get().stream().map(p -> p.getUser().getId()).distinct().collect(Collectors.toList());
 
         this.sendMessageOrPost(userIds, socketMessage);

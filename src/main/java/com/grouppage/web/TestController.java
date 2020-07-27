@@ -37,7 +37,7 @@ public class TestController {
     }
 
     @GetMapping("/groups")
-    public ResponseEntity<List<Group>> getGroups() throws NoSuchMethodException, InterruptedException {
+    public ResponseEntity<List<Group>> getGroups() {
         List<Group> groups = this.getByExec();
         return ResponseEntity.ok(groups);
     }
@@ -60,23 +60,23 @@ public class TestController {
         }
         return null;
     }
-    @GetMapping("/groupsno")
-    public ResponseEntity<List<Group>> gre(){
-        long time = System.currentTimeMillis();
-        List<Group> groups = groupRepository.findAll();
-        List<Group> groups1 = groupRepository.findAll();
-        List<Group> groups2 = groupRepository.findAll();
-        List<Group> groups3 = groupRepository.findAll();
-        List<Group> groups4 = groupRepository.findAll();
-        List<Group> result = new ArrayList<>(groups);
-        result.addAll(groups1);
-        result.addAll(groups2);
-        result.addAll(groups3);
-        result.addAll(groups4);
-        System.out.println(System.currentTimeMillis() - time);
-        System.out.println(groups.getClass());
-        return ResponseEntity.ok(result);
-    }
+//    @GetMapping("/groupsno")
+//    public ResponseEntity<List<Group>> gre(){
+//        long time = System.currentTimeMillis();
+//        List<Group> groups = groupRepository.findAll();
+//        List<Group> groups1 = groupRepository.findAll();
+//        List<Group> groups2 = groupRepository.findAll();
+//        List<Group> groups3 = groupRepository.findAll();
+//        List<Group> groups4 = groupRepository.findAll();
+//        List<Group> result = new ArrayList<>(groups);
+//        result.addAll(groups1);
+//        result.addAll(groups2);
+//        result.addAll(groups3);
+//        result.addAll(groups4);
+//        System.out.println(System.currentTimeMillis() - time);
+//        System.out.println(groups.getClass());
+//        return ResponseEntity.ok(result);
+//    }
     @GetMapping("/posts")
     public ResponseEntity<List<Post>> getPosts(){
         return ResponseEntity.ok(postRepository.findAll());

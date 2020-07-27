@@ -24,9 +24,6 @@ public class SocketController {
     private final ChatService chatService;
     private final GroupService groupService;
 
-//    @Autowired
-//    private SimpMessagingTemplate simpMessagingTemplate;
-
     @Autowired
     public SocketController(ChatService chatService,
                             GroupService groupService) {
@@ -41,7 +38,6 @@ public class SocketController {
             @DestinationVariable String id
             ) throws ExecutionException, InterruptedException {
         this.chatService.processNewPrivateMessage(socketMessage, Long.parseLong(id));
-        //this.simpMessagingTemplate.convertAndSend("/topic/test", socketMessage);
     }
 
     @MessageMapping("/group/{id}/sendpost")
