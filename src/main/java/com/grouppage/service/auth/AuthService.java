@@ -9,8 +9,8 @@ import com.grouppage.event.RegistrationEvent;
 import com.grouppage.exception.UsernameAlreadyExists;
 import com.grouppage.exception.WrongDataPostedException;
 import com.grouppage.security.jwt.JwtProvider;
+import com.grouppage.service.ExecService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +25,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @Service
 @Transactional
@@ -33,6 +35,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final ExecService execService;
     private final ApplicationEventPublisher eventPublisher;
     private final JwtProvider jwtProvider;
 
@@ -40,15 +43,16 @@ public class AuthService {
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
-                       ApplicationEventPublisher eventPublisher, JwtProvider jwtProvider) {
+                       ExecService execService, ApplicationEventPublisher eventPublisher, JwtProvider jwtProvider) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.execService = execService;
         this.eventPublisher = eventPublisher;
         this.jwtProvider = jwtProvider;
     }
 
-    public ResponseEntity<Void> signIn(LoginRequest loginRequest) {
+    public ResponseEntity<Void> signIn(LoginRequest loginRequest) throws ExecutionException, InterruptedException {
         Authentication authentication =
                 authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(
@@ -90,13 +94,17 @@ public class AuthService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User with email "+ email+" doesnt exists!"));
     }
-    private HttpHeaders generateCookieWithNewTokens(){
+    private HttpHeaders generateCookieWithNewTokens() throws ExecutionException, InterruptedException {
         HttpHeaders headers = new HttpHeaders();
         User user = this.getUserFromContext();
-        Token access = jwtProvider.generateToken(user, true);
-        Token refresh = jwtProvider.generateToken(user, false);
-        headers.add(HttpHeaders.SET_COOKIE, jwtProvider.generateCookieFromToken(access).toString());
-        headers.add(HttpHeaders.SET_COOKIE, jwtProvider.generateCookieFromToken(refresh).toString());
+        Future<Token> futureAcces = execService.executeCallable(
+                () -> jwtProvider.generateToken(user, true)
+        );
+        Future<Token> futureRefresh = execService.executeCallable(
+                () -> jwtProvider.generateToken(user, false)
+        );
+        headers.add(HttpHeaders.SET_COOKIE, jwtProvider.generateCookieFromToken(futureAcces.get()).toString());
+        headers.add(HttpHeaders.SET_COOKIE, jwtProvider.generateCookieFromToken(futureRefresh.get()).toString());
         return headers;
     }
 
@@ -104,7 +112,9 @@ public class AuthService {
         Optional<User> optional = this.userRepository.findByResetPasswordToken(uuid);
         if(optional.isPresent()){
             optional.get().setActivated(true);
-            this.userRepository.save(optional.get());
+            execService.executeRunnable(
+                    () -> this.userRepository.save(optional.get())
+            );
         }else{
             throw new WrongDataPostedException("Invalid activation token");
         }
