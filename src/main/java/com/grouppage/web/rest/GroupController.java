@@ -14,12 +14,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/group")
-public class ApiGroupController {
+public class GroupController {
 
     private final GroupService groupService;
 
     @Autowired
-    public ApiGroupController(GroupService groupService) {
+    public GroupController(GroupService groupService) {
         this.groupService = groupService;
     }
 
@@ -31,9 +31,9 @@ public class ApiGroupController {
 //        return ResponseEntity.ok(response);
 //    }
 
-    @GetMapping
+    @GetMapping("/{group}")
     public ResponseEntity<List<Post>> getAllPosts(
-            @RequestParam(name = "group") Group group
+            @PathVariable Group group
     ){
         List<Post> response = groupService.getPostForGroupId(group);
         return ResponseEntity.ok(response);

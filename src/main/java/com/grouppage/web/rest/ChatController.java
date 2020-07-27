@@ -13,12 +13,12 @@ import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api/message")
-public class ApiChatController {
+public class ChatController {
 
     private final ChatService chatService;
 
     @Autowired
-    public ApiChatController(ChatService chatService) {
+    public ChatController(ChatService chatService) {
         this.chatService = chatService;
     }
 

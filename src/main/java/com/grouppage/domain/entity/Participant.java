@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -18,6 +20,9 @@ public class Participant extends AbstractEntityDate{
 
     @NotNull
     private String nickname;
+
+    @ManyToMany(targetEntity = Post.class, fetch = FetchType.EAGER)
+    private List<Post> likedPosts = new ArrayList<>();
 
     @OneToOne(targetEntity = User.class)
     private User user;

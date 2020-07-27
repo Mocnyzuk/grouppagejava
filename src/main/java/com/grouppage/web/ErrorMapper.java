@@ -23,7 +23,8 @@ public class ErrorMapper {
     @ExceptionHandler({
             ConversationNotFoundException.class,
             GroupNotFoundException.class,
-            ParticipantNotFountException.class
+            ParticipantNotFountException.class,
+            PostNotFoundException.class
     })
     public ResponseEntity<String> notFoundException(Exception ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
