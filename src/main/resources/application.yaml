@@ -3,9 +3,9 @@ spring:
     hibernate:
       ddl-auto: none
   datasource:
-    url: jdbc:mysql://beewoqf2yjm4hpvzsbxy-mysql.services.clever-cloud.com:3306/beewoqf2yjm4hpvzsbxy
-    username: udzmibuhumbpcz5b
-    password: yxWc7zA4jMGOBPT2Vosn
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
   mail:
     host: smtp.gmail.com
     port: 465
