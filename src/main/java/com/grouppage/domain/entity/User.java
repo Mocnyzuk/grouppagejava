@@ -40,6 +40,7 @@ public class User extends AbstractEntityDate{
 
     @Column(columnDefinition = "boolean default false")
     private boolean isActivated;
+
     @Column(columnDefinition = "boolean default false")
     private boolean isDeleted;
 

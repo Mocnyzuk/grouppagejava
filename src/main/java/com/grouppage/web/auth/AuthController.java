@@ -1,5 +1,6 @@
 package com.grouppage.web.auth;
 
+import com.grouppage.domain.entity.User;
 import com.grouppage.domain.response.LoginRequest;
 import com.grouppage.domain.response.RegisterRequest;
 import com.grouppage.exception.UsernameAlreadyExists;
@@ -23,7 +24,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(
+    public ResponseEntity<User> login(
             @RequestBody LoginRequest loginRequest
     ) throws WrongCredentialsException, ExecutionException, InterruptedException {
         return authService.signIn(loginRequest);

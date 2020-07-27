@@ -13,6 +13,7 @@ import com.grouppage.service.ExecService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -52,7 +53,7 @@ public class AuthService {
         this.jwtProvider = jwtProvider;
     }
 
-    public ResponseEntity<Void> signIn(LoginRequest loginRequest) throws ExecutionException, InterruptedException {
+    public ResponseEntity<User> signIn(LoginRequest loginRequest) throws ExecutionException, InterruptedException {
         Authentication authentication =
                 authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(
@@ -61,7 +62,11 @@ public class AuthService {
                 );
         SecurityContextHolder.getContext().setAuthentication(authentication);
         HttpHeaders headers = this.generateCookieWithNewTokens();
-        return ResponseEntity.accepted().headers(headers).build();
+        return ResponseEntity.status(HttpStatus.ACCEPTED).headers(headers).body(
+                this.userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(
+                        () -> new UsernameNotFoundException("User with email: "+ loginRequest.getEmail()+ " doesnt exists!")
+                )
+        );
     }
 
 
