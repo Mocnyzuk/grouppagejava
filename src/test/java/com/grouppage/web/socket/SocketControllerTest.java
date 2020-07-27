@@ -8,10 +8,7 @@ import com.grouppage.domain.notmapped.SocketMessage;
 import com.grouppage.domain.repository.chat.ConversationRepository;
 import com.grouppage.domain.repository.chat.PrivateMessageRepository;
 import com.grouppage.domain.response.LoginRequest;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.AbstractNestablePropertyAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -22,6 +19,8 @@ import org.springframework.http.MediaType;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.*;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.event.annotation.AfterTestClass;
+import org.springframework.test.context.event.annotation.AfterTestExecution;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -73,7 +72,7 @@ class SocketControllerTest {
     private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
 
 
-    @BeforeEach
+    @BeforeAll
     void setup() throws Exception {
         String accessToken = this.authAsFpmoles();
         headers.add(HttpHeaders.AUTHORIZATION, accessToken);
@@ -146,6 +145,53 @@ class SocketControllerTest {
         }
         else {
             fail("Greeting not received");
+        }
+
+    }
+
+    @Test
+    void doesNotGetAMessage() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<Throwable> failure = new AtomicReference<>();
+        StompSessionHandler handler = new TestSessionHandler(failure){
+            @Override
+            public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
+                // Step 2: Simulate the client subscribing to a topic
+                session.subscribe("/topic/1", new StompFrameHandler() {
+
+                    @Override
+                    public Type getPayloadType(StompHeaders headers) {
+
+                        return SocketMessage.class;
+                    }
+
+                    @Override
+                    public void handleFrame(StompHeaders headers, Object payload) {
+                        fail();
+                    }
+                });
+                try {
+                    session.send("/app/conversation/1/sendmessage", new SocketMessage(
+                            59, "drugi test", SocketMessage.Type.CHAT
+                    ));
+                } catch (Exception e) {
+                    failure.set(e);
+                    latch.countDown();
+                }
+            }
+        };
+        this.stompClient.connect(
+                WEBSOCKET_URI,
+                this.headers,
+                handler,
+                this.port);
+        if (latch.await(3, TimeUnit.SECONDS)) {
+            if (failure.get() != null) {
+                throw new AssertionError("", failure.get());
+            }
+        }
+        else {
+            assertTrue(true);
         }
 
     }
