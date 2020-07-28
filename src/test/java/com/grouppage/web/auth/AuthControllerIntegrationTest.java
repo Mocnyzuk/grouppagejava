@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DirtiesContext
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AuthControllerTest {
+class AuthControllerIntegrationTest {
 
     public static final String AUTH_HEADER = "Authorization";
     public static final String SET_COOKIE = "Set-Cookie";

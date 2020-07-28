@@ -3,6 +3,7 @@ package com.grouppage.service;
 import com.grouppage.domain.entity.Group;
 import com.grouppage.domain.entity.Participant;
 import com.grouppage.domain.entity.Post;
+import com.grouppage.domain.entity.User;
 import com.grouppage.domain.entity.chat.Conversation;
 import com.grouppage.domain.entity.chat.PrivateMessage;
 import com.grouppage.domain.notmapped.HashTag;
@@ -17,6 +18,7 @@ import com.grouppage.exception.ConversationNotFoundException;
 import com.grouppage.exception.GroupNotFoundException;
 import com.grouppage.exception.ParticipantNotFountException;
 import com.grouppage.exception.WrongDataPostedException;
+import com.grouppage.service.auth.AuthService;
 import com.grouppage.service.auth.Principal;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
@@ -42,9 +44,7 @@ public class ChatService {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
 
-
-
-
+    private final AuthService authService;
     private final ExecService execService;
 
     private final String HASH = "H";
@@ -56,13 +56,14 @@ public class ChatService {
                        PrivateMessageRepository privateMessageRepository,
                        GroupRepository groupRepository,
                        PostRepository postRepository, SimpMessagingTemplate simpMessagingTemplate,
-                       ExecService execService) {
+                       AuthService authService, ExecService execService) {
         this.participantRepository = participantRepository;
         this.conversationRepository = conversationRepository;
         this.privateMessageRepository = privateMessageRepository;
         this.groupRepository = groupRepository;
         this.postRepository = postRepository;
         this.simpMessagingTemplate = simpMessagingTemplate;
+        this.authService = authService;
         this.execService = execService;
     }
 
@@ -86,13 +87,14 @@ public class ChatService {
 
     public void processNewPrivateMessage(SocketMessage socketMessage,
                                         long conversationId) throws WrongDataPostedException, ExecutionException, InterruptedException, AccessDeniedException {
-        if (socketMessage.getType().equals(SocketMessage.Type.GROUP)){
+        if (!socketMessage.getType().equals(SocketMessage.Type.CHAT)){
             throw new WrongDataPostedException("Group message posted to private handler!");
         }
+        if(this.checkOwnerOfParcitipant(socketMessage.getParticipantId()))
+            throw new AccessDeniedException("You dont own this participant");
         Conversation conversationFuture = this.conversationRepository.findById(conversationId).orElseThrow(
                 () -> new ConversationNotFoundException("COnv not foud with id: "+conversationId)
         );
-
         List<Participant> fromConv = conversationFuture.getParticipants();
         if(fromConv.stream().noneMatch(p -> p.getId() == socketMessage.getParticipantId()))
             throw new AccessDeniedException("You have no permission do send messages here!");
@@ -121,7 +123,8 @@ public class ChatService {
         if(socketMessage.getType() != SocketMessage.Type.GROUP){
             throw new WrongDataPostedException("Message is not a post for group!");
         }
-
+        if(this.checkOwnerOfParcitipant(socketMessage.getParticipantId()))
+            throw new AccessDeniedException("You dont own this participant");
         Future<List<HashTag>> hashTags = this.getHashTagsFromPost(socketMessage.getContent());
         Future<Group> groupFuture = execService.executeCallable(
                 () -> this.groupRepository.findById(groupId).orElseThrow(
@@ -148,7 +151,8 @@ public class ChatService {
         List<Long> userIds = participantFuture.get().stream().map(p -> p.getUser().getId()).distinct().collect(Collectors.toList());
 
         this.sendMessageOrPost(userIds, socketMessage);
-        execService.executeCallable(() -> postRepository.save(messageFuture.get()));
+        Post post = messageFuture.get();
+        execService.executeCallable(() -> postRepository.save(post));
     }
 
     private Future<List<HashTag>> getHashTagsFromPost(String post){
@@ -179,6 +183,13 @@ public class ChatService {
                     () -> this.simpMessagingTemplate.convertAndSend("/topic/" + userId, message)
             );
         }
+    }
+    private boolean checkOwnerOfParcitipant(long participantId) {
+        Participant participant = this.participantRepository.findById(participantId).orElseThrow(
+                () -> new ParticipantNotFountException("Participant with id: " + participantId + " doesnt exists!")
+        );
+        User user = this.authService.getUserFromContext();
+        return participant.getUser().getId() != user.getId();
     }
     public void addNewParticipantToConversation(AddParticipantRequest request) throws ExecutionException, InterruptedException {
         Future<Conversation> futureConv = execService.executeCallable(()->conversationRepository.findById(request.getConversationId())

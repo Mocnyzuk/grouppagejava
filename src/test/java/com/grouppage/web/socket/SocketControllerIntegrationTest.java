@@ -48,7 +48,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SocketControllerTest {
+class SocketControllerIntegrationTest {
 
     public static final String WEBSOCKET_URI = "ws://localhost:{port}/websocketApp";
     public static final String WEBSOCKET_TOPIC = "/topic";

@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class PostControllerTest {
+class PostControllerIntegrationTest {
 
 
     @Autowired
