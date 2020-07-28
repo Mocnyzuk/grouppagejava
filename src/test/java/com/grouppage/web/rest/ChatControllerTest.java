@@ -27,6 +27,7 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
+import sun.management.HotspotRuntimeMBean;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
@@ -80,6 +81,42 @@ class ChatControllerTest {
         assertTrue(conversationRepository.findById(1L).orElseThrow(
                 () -> new ConversationNotFoundException("not foud")
         ).getParticipants().stream().anyMatch(p -> p.getId() == 37));
+    }
+    @Test
+    void addNonExistingParticipantToExistingConversation()throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders
+                .post(URL)
+                .header(HttpHeaders.AUTHORIZATION, this.accessTokenHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                        MAPPER.writeValueAsString(
+                                new AddParticipantRequest(1, 9999)
+                        )
+                ))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+        assertFalse(conversationRepository.findById(1L).orElseThrow(
+                () -> new ConversationNotFoundException("nie ma")
+        ).getParticipants().stream().anyMatch(p -> p.getId() == 9999));
+
+    }
+    @Test
+    void addNonExistingParticipantToNonExistingConversation()throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders
+                .post(URL)
+                .header(HttpHeaders.AUTHORIZATION, this.accessTokenHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                        MAPPER.writeValueAsString(
+                                new AddParticipantRequest(9999, 9999)
+                        )
+                ))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+        assertThrows(ConversationNotFoundException.class, () -> conversationRepository.findById(9999L).orElseThrow(
+                () -> new ConversationNotFoundException("nie ma")
+        ));
+
     }
     @AfterAll
     void deleteInsertionFromTests(){

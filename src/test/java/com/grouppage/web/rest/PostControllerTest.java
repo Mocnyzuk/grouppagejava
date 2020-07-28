@@ -11,6 +11,8 @@ import com.grouppage.domain.repository.GroupRepository;
 import com.grouppage.domain.repository.ParticipantRepository;
 import com.grouppage.domain.repository.PostRepository;
 import com.grouppage.domain.response.LoginRequest;
+import com.grouppage.exception.ParticipantNotFountException;
+import com.grouppage.exception.PostNotFoundException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -98,6 +100,39 @@ class PostControllerTest {
         assertNotEquals(testPost.getReactionCount(), returnedPost.getReactionCount());
     }
 
+    @Test
+    void voteUpBySelfAndThenDevote() throws Exception{
+        MvcResult upVote = this.mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/post/upvote/" + this.testParticipan.getId())
+                .header(HttpHeaders.AUTHORIZATION, accessTokenHeader)
+                .param("id", String.valueOf(this.testPost.getId()))
+        )
+                .andExpect(status().isCreated())
+                .andDo(print())
+                .andReturn();
+        Post returnedPost = MAPPER.readValue(upVote.getResponse().getContentAsString(), Post.class);
+        assertNotNull(returnedPost);
+        assertEquals(testPost.getId(), returnedPost.getId());
+        assertEquals(1, this.participantRepository.findById(this.testParticipan.getId()).orElseThrow(
+                () -> new ParticipantNotFountException("nie ma")
+        ).getLikedPosts().size());
+        assertNotEquals(testPost.getReactionCount(), returnedPost.getReactionCount());
+
+        MvcResult removeVote = this.mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/post/removevote/" + this.testParticipan.getId())
+                .header(HttpHeaders.AUTHORIZATION, accessTokenHeader)
+                .param("id", String.valueOf(this.testPost.getId()))
+        )
+                .andExpect(status().isCreated())
+                .andDo(print())
+                .andReturn();
+        Post removedVotePost = MAPPER.readValue(removeVote.getResponse().getContentAsString(), Post.class);
+        assertNotNull(returnedPost);
+        assertEquals(testPost.getId(), returnedPost.getId());
+        assertEquals(testPost.getReactionCount(), removedVotePost.getReactionCount());
+
+    }
+
 
     @AfterAll
     void deleteInsertedData() {
@@ -106,7 +141,6 @@ class PostControllerTest {
         parti.setLikedPosts(new ArrayList<>());
         this.participantRepository.save(parti);
         this.postRepository.delete(this.postRepository.findById(this.testPost.getId()).get());
-
     }
 
     private String authAsFpmoles() throws Exception {
