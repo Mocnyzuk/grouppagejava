@@ -18,6 +18,7 @@ import com.grouppage.exception.GroupNotFoundException;
 import com.grouppage.exception.ParticipantNotFountException;
 import com.grouppage.exception.WrongDataPostedException;
 import com.grouppage.service.auth.Principal;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
@@ -175,12 +176,24 @@ public class ChatService {
     private void sendMessageOrPost(List<Long> userIds, SocketMessage message){
         for (Long userId : userIds) {
             execService.executeRunnable(
-                    () -> {
-                        this.simpMessagingTemplate.convertAndSend("/topic/" + userId, message);
-                    }
+                    () -> this.simpMessagingTemplate.convertAndSend("/topic/" + userId, message)
             );
         }
     }
+    public void addNewParticipantToConversation(AddParticipantRequest request) throws ExecutionException, InterruptedException {
+        Future<Conversation> futureConv = execService.executeCallable(()->conversationRepository.findById(request.getConversationId())
+                .orElseThrow(() -> new ConversationNotFoundException("Conversation with id: "+request.getConversationId()+ " doesnt exists!")));
+        Future<Participant> futurePart = execService.executeCallable(()->participantRepository.findById(request.getParticipantId())
+                .orElseThrow(() -> new ParticipantNotFountException("Participant with id: "+ request.getParticipantId()+" doesnt exists!")));
+        Conversation conv = futureConv.get();
+        List<Participant> fromConv = conv.getParticipants();
+        fromConv.add(futurePart.get());
+        conv.setParticipants(fromConv);
+        conversationRepository.save(futureConv.get());
+    }
+
+
+
 
 
     /**
@@ -191,7 +204,7 @@ public class ChatService {
     private void testCode(SocketMessage socketMessage, SimpMessagingTemplate simpMessagingTemplate){
         Principal user = (Principal)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Participant> participants = participantRepository.findAllByUserId(user.getId());
-
+        //new SimpleAsyncTaskExecutor();
         Future<List<Group>> futureGroups = execService.executeCallable( () -> participants.stream()
                 .map(Participant::getGroup)
                 .collect(Collectors.toList()));
@@ -226,15 +239,5 @@ public class ChatService {
     }
 
 
-    public void addNewParticipantToConversation(AddParticipantRequest request) throws ExecutionException, InterruptedException {
-        Future<Conversation> futureConv = execService.executeCallable(()->conversationRepository.findById(request.getConversationId())
-        .orElseThrow(() -> new ConversationNotFoundException("Conversation with id: "+request.getConversationId()+ " doesnt exists!")));
-        Future<Participant> futurePart = execService.executeCallable(()->participantRepository.findById(request.getParticipantId())
-        .orElseThrow(() -> new ParticipantNotFountException("Participant with id: "+ request.getParticipantId()+" doesnt exists!")));
-        Conversation conv = futureConv.get();
-        List<Participant> fromConv = conv.getParticipants();
-        fromConv.add(futurePart.get());
-        conv.setParticipants(fromConv);
-        conversationRepository.save(futureConv.get());
-    }
+
 }
