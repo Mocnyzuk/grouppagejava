@@ -15,7 +15,7 @@ public class ExecService {
     private final AsyncTaskExecutor executor;
 
     @Autowired
-    public ExecService(@Qualifier("applicationTaskExecutor") AsyncTaskExecutor executor) {
+    public ExecService(AsyncTaskExecutor executor) {
         this.executor = executor;
     }
 
