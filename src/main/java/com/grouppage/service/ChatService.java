@@ -18,14 +18,11 @@ import com.grouppage.exception.GroupNotFoundException;
 import com.grouppage.exception.ParticipantNotFountException;
 import com.grouppage.exception.WrongDataPostedException;
 import com.grouppage.service.auth.Principal;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.Access;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +31,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class ChatService {
 
     private final ParticipantRepository participantRepository;
@@ -82,6 +80,7 @@ public class ChatService {
 
         conversation.setParticipants(partis);
         Conversation conv = conversationRepository.save(conversation);
+        System.out.println("CONVERSATION ID: " + conv.getId() );
         this.processNewPrivateMessage(socketMessage, conv.getId());
     }
 
@@ -90,10 +89,11 @@ public class ChatService {
         if (socketMessage.getType().equals(SocketMessage.Type.GROUP)){
             throw new WrongDataPostedException("Group message posted to private handler!");
         }
-        Future<Conversation> conversationFuture = execService.executeCallable(() -> this.conversationRepository.findById(conversationId).orElseThrow(
-                () -> new ConversationNotFoundException("Conversation doesnt exists with id: "+ conversationId)
-        ));
-        List<Participant> fromConv = conversationFuture.get().getParticipants();
+        Conversation conversationFuture = this.conversationRepository.findById(conversationId).orElseThrow(
+                () -> new ConversationNotFoundException("COnv not foud with id: "+conversationId)
+        );
+
+        List<Participant> fromConv = conversationFuture.getParticipants();
         if(fromConv.stream().noneMatch(p -> p.getId() == socketMessage.getParticipantId()))
             throw new AccessDeniedException("You have no permission do send messages here!");
         Future<PrivateMessage> messageFuture = execService.executeCallable( () -> {
@@ -105,7 +105,7 @@ public class ChatService {
             message.setSender(fromConv.stream().filter(p -> p.getId() == socketMessage.getParticipantId()).findFirst().orElseThrow(
                     () -> new ParticipantNotFountException("Participant doesnt exists with id: "+ socketMessage.getParticipantId())
             ));
-            message.setConversation(conversationFuture.get());
+            message.setConversation(conversationFuture);
             message.setType(socketMessage.getType().name());
             return message;
                 }
@@ -189,7 +189,7 @@ public class ChatService {
         List<Participant> fromConv = conv.getParticipants();
         fromConv.add(futurePart.get());
         conv.setParticipants(fromConv);
-        conversationRepository.save(futureConv.get());
+        conversationRepository.save(conv);
     }
 
 

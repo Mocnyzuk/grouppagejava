@@ -87,6 +87,7 @@ public class StartUp implements CommandLineRunner {
         conversation.setParticipants(Arrays.asList(p1, p2));
         conversation.setAvatar("bez awatara");
         conversation.setName("conversation");
+        this.participantRepository.saveAll(Arrays.asList(p1, p2));
         this.conversationRepository.save(conversation);
         this.privateMessageRepository.save(message);
     }

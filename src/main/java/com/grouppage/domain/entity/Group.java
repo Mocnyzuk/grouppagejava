@@ -1,7 +1,9 @@
 package com.grouppage.domain.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
@@ -11,6 +13,8 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Data
 @Table(name = "group_table")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Group extends AbstractEntityDate{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

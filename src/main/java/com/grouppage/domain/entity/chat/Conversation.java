@@ -2,17 +2,22 @@ package com.grouppage.domain.entity.chat;
 
 import com.grouppage.domain.entity.AbstractEntityDate;
 import com.grouppage.domain.entity.Participant;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 public class Conversation extends AbstractEntityDate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,7 +32,7 @@ public class Conversation extends AbstractEntityDate {
 
 
     @Size(min = 1, max = 5)
-    @ManyToMany(targetEntity = Participant.class, fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    private List<Participant> participants;
+    @ManyToMany(targetEntity = Participant.class, fetch = FetchType.EAGER)
+    private List<Participant> participants = new ArrayList<>();
 
 }

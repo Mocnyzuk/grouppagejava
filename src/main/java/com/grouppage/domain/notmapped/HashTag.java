@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class HashTag {
-    private String value;
+    private String hashTag;
     public String getHashTag(){
-        return this.value;
+        return this.hashTag;
     }
 }

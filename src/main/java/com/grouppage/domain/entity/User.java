@@ -2,8 +2,10 @@ package com.grouppage.domain.entity;
 
 import com.grouppage.domain.converter.AuthoritiesConverter;
 import com.sun.corba.se.spi.ior.IdentifiableFactory;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -19,6 +21,8 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 public class User extends AbstractEntityDate{
 
     @Id

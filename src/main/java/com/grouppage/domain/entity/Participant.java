@@ -2,6 +2,7 @@ package com.grouppage.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,8 @@ import java.util.List;
 @Data
 @Entity
 @Table(uniqueConstraints={@UniqueConstraint(columnNames = {"nickname" , "group_id", "user_id"})})
+@AllArgsConstructor
+@NoArgsConstructor
 public class Participant extends AbstractEntityDate{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,16 +26,14 @@ public class Participant extends AbstractEntityDate{
     @NotNull
     private String nickname;
 
-    @OneToMany(targetEntity = Post.class)
-    @JsonIgnoreProperties("author")
+    @ManyToMany(targetEntity = Post.class)
+    //@JsonIgnoreProperties("author")
     private List<Post> likedPosts = new ArrayList<>();
 
-    @OneToOne(targetEntity = User.class)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @JsonIgnore
+    @ManyToOne(targetEntity = User.class)
     private User user;
 
-    @OneToOne(targetEntity = Group.class)
+    @ManyToOne(targetEntity = Group.class)
     private Group group;
 
     private boolean isEnabled = false;

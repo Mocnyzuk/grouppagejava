@@ -9,6 +9,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.util.concurrent.ExecutionException;
+
 @ControllerAdvice
 public class ErrorMapper {
 
@@ -28,6 +30,10 @@ public class ErrorMapper {
     })
     public ResponseEntity<String> notFoundException(Exception ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+    @ExceptionHandler(ExecutionException.class)
+    public ResponseEntity<Throwable> executionException(ExecutionException ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex);
     }
 
     @ExceptionHandler({

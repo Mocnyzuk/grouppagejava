@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.grouppage.domain.converter.HashTagConverter;
 import com.grouppage.domain.notmapped.HashTag;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -16,6 +18,8 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 public class Post extends AbstractEntityDate{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,9 +28,8 @@ public class Post extends AbstractEntityDate{
     @ManyToOne(targetEntity = Group.class)
     private Group group;
 
-    @OneToOne(targetEntity = Participant.class)
-    @JoinColumn(name = "author_id", referencedColumnName = "id")
-    @JsonIgnoreProperties("likedPosts")
+    @ManyToOne(targetEntity = Participant.class)
+    @JsonIgnore
     private Participant author;
 
     // TODO remove SQL injection posiibility
@@ -35,7 +38,6 @@ public class Post extends AbstractEntityDate{
     private String content;
 
     @Convert(converter = HashTagConverter.class)
-    @JsonIgnore
     private List<HashTag> hashTags;
 
     @Column(columnDefinition = "integer default 0")

@@ -94,7 +94,7 @@ class SocketControllerTest {
             @Override
             public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
                 // Step 2: Simulate the client subscribing to a topic
-                session.subscribe("/topic/1", new StompFrameHandler() {
+                session.subscribe("/topic/2", new StompFrameHandler() {
 
                     @Override
                     public Type getPayloadType(StompHeaders headers) {
@@ -121,12 +121,13 @@ class SocketControllerTest {
                     mockMvc.perform(MockMvcRequestBuilders.post("/api/message/new")
                             .headers(headers)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .param("receiver", "14")
+                            .param("receiver", "7")
                             .content(
                                     MAPPER.writeValueAsString(new SocketMessage(1, "Pierwsza wiadomosc", SocketMessage.Type.CHAT))
                             )
                     )
-                            .andExpect(status().isCreated());
+                            .andExpect(status().isCreated())
+                            .andDo(print());
                 } catch (Exception e) {
                     failure.set(e);
                     latch.countDown();

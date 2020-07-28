@@ -2,6 +2,7 @@ package com.grouppage.web;
 
 import com.grouppage.domain.entity.Group;
 import com.grouppage.domain.entity.Post;
+import com.grouppage.domain.entity.chat.Conversation;
 import com.grouppage.domain.repository.GroupRepository;
 import com.grouppage.domain.repository.ParticipantRepository;
 import com.grouppage.domain.repository.PostRepository;
@@ -40,6 +41,10 @@ public class TestController {
     public ResponseEntity<List<Group>> getGroups() {
         List<Group> groups = this.getByExec();
         return ResponseEntity.ok(groups);
+    }
+    @GetMapping("/convs")
+    public ResponseEntity<List<Conversation>> getConsv() {
+        return ResponseEntity.ok(this.conversationRepository.findAll());
     }
 
     private List<Group> getByExec(){

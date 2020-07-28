@@ -2,14 +2,18 @@ package com.grouppage.domain.entity;
 
 import com.grouppage.domain.converter.GroupFormConverter;
 import com.grouppage.domain.notmapped.GroupForm;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 public class SignUpForm extends AbstractEntityDate{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
