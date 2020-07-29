@@ -24,7 +24,6 @@ public class Group extends AbstractEntityDate{
 
     @NotNull
     @Column(unique = true, nullable = false)
-    @NotNull
     private String name;
 
     private String description;
