@@ -14,6 +14,6 @@ public class SocketMessage {
     private Type type;
 
     public enum Type{
-        CHAT, GROUP, IS_TYPING, NOTIFICATION
+        CHAT, GROUP, IS_TYPING, NOTIFICATION, DISCONNECT
     }
 }

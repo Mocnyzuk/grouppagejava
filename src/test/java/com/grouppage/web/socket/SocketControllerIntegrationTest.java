@@ -94,7 +94,7 @@ class SocketControllerIntegrationTest {
             @Override
             public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
                 // Step 2: Simulate the client subscribing to a topic
-                session.subscribe("/topic/2", new StompFrameHandler() {
+                session.subscribe("/topic/1", new StompFrameHandler() {
 
                     @Override
                     public Type getPayloadType(StompHeaders headers) {
@@ -106,7 +106,6 @@ class SocketControllerIntegrationTest {
                     public void handleFrame(StompHeaders headers, Object payload) {
                         SocketMessage greeting = (SocketMessage) payload;
                         try {
-                            int i = 10;
                             // Step 4:  Validate that the broadcast server response is correct
                             assertEquals("Pierwsza wiadomosc", greeting.getContent());
                         } catch (Throwable t) {
@@ -121,9 +120,9 @@ class SocketControllerIntegrationTest {
                     mockMvc.perform(MockMvcRequestBuilders.post("/api/message/new")
                             .headers(headers)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .param("receiver", "7")
+                            .param("receiver", "9")
                             .content(
-                                    MAPPER.writeValueAsString(new SocketMessage(1, "Pierwsza wiadomosc", SocketMessage.Type.CHAT))
+                                    MAPPER.writeValueAsString(new SocketMessage(4, "Pierwsza wiadomosc", SocketMessage.Type.CHAT))
                             )
                     )
                             .andExpect(status().isCreated())

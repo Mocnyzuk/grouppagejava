@@ -1,10 +1,14 @@
 package com.grouppage.event.listener;
 
 import com.grouppage.domain.entity.chat.PrivateMessage;
+import com.grouppage.domain.notmapped.SocketMessage;
+import com.grouppage.service.auth.AuthService;
+import com.grouppage.service.auth.Principal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -13,15 +17,22 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 public class WebSocketChatEventListener {
 
     private final SimpMessageSendingOperations messagingTemplate;
+    private final AuthService authService;
 
     @Autowired
-    public WebSocketChatEventListener(SimpMessageSendingOperations messagingTemplate) {
+    public WebSocketChatEventListener(SimpMessageSendingOperations messagingTemplate, AuthService authService) {
         this.messagingTemplate = messagingTemplate;
+        this.authService = authService;
     }
     @EventListener
     public void handleWebSocketConnectListener(
             SessionConnectedEvent event){
-        System.out.println("received new web socket connection "+ event.getUser().getName());
+        System.out.println("new conneciton appeared username: "+ event.getUser().getName());
+//        Principal principal = (Principal)((UsernamePasswordAuthenticationToken)event.getUser()).getPrincipal();
+//        if(this.authService.getUserFromContext().getId() != principal.getId()){
+//            this.messagingTemplate.convertAndSend("/topic/"+ principal.getId(),
+//                    new SocketMessage(0, null, SocketMessage.Type.DISCONNECT));
+//        }
     }
     @EventListener
     public void handleWebSocketDisconnectListener(
