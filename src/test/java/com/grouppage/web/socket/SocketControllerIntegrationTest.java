@@ -71,11 +71,13 @@ class SocketControllerIntegrationTest {
 
     private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
 
+    public String accessToken;
 
     @BeforeAll
     void setup() throws Exception {
-        String accessToken = this.authAsFpmoles();
-        headers.add(HttpHeaders.AUTHORIZATION, accessToken);
+        this.accessToken = this.authAsFpmoles();
+        headers.add(HttpHeaders.AUTHORIZATION, this.accessToken);
+        headers.add("X-Authorization", this.accessToken);
         List<Transport> transports = new ArrayList<>();
         transports.add(new WebSocketTransport(new StandardWebSocketClient()));
         this.sockJsClient = new SockJsClient(transports);
@@ -133,6 +135,7 @@ class SocketControllerIntegrationTest {
                 }
             }
         };
+
         this.stompClient.connect(
                 WEBSOCKET_URI,
                 this.headers,

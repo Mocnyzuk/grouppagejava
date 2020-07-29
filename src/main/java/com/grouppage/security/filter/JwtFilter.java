@@ -52,10 +52,10 @@ public class JwtFilter extends OncePerRequestFilter {
     private UserDetails getUser(HttpServletRequest request) throws WrongCredentialsException {
         String auth = request.getHeader("Authorization");
         if(auth != null){
-            return this.getPrincipalFromToken(SecurityCipher.decrypt(auth.replace(BEARER, "")));
+            return jwtProvider.getPrincipalFromToken(SecurityCipher.decrypt(auth.replace(BEARER, "")));
         }else{
             auth = this.getTokenFromCookie(request.getCookies());
-            return this.getPrincipalFromToken(auth);
+            return jwtProvider.getPrincipalFromToken(auth);
         }
     }
     private void processAuth(HttpServletRequest request, UserDetails userDetails) {
@@ -79,8 +79,4 @@ public class JwtFilter extends OncePerRequestFilter {
         throw new WrongCredentialsException("We does not found any valid token");
     }
 
-    private UserDetails getPrincipalFromToken(String tokenString)throws WrongCredentialsException {
-        String email = jwtProvider.getEmail(tokenString);
-        return userDetailsService.loadUserByUsername(email);
-    }
 }

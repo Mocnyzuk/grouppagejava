@@ -43,13 +43,8 @@ public class GroupService {
 
     }
 
-    public List<Post> getPostForGroupId(Group group)throws GroupNotFoundException {
-        long groupId = group.getId();
-        return postRepository.findAllByGroup(
-                groupRepository.findById(groupId).orElseThrow(
-                        () -> new GroupNotFoundException("Group with id: "+groupId+" doesnt exists!")
-                )
-        );
+    public List<Post> getPostForGroupId(long groupId)throws GroupNotFoundException {
+        return postRepository.findAllByGroupId(groupId);
     }
 
     public List<GroupSearch> findGroupBySearchPhrase(String phrase) {

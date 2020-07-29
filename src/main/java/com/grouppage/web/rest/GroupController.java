@@ -31,11 +31,11 @@ public class GroupController {
 //        return ResponseEntity.ok(response);
 //    }
 
-    @GetMapping("/{group}")
+    @GetMapping("/{groupId}")
     public ResponseEntity<List<Post>> getAllPosts(
-            @PathVariable Group group
+            @PathVariable long groupId
     ){
-        List<Post> response = groupService.getPostForGroupId(group);
+        List<Post> response = groupService.getPostForGroupId(groupId);
         return ResponseEntity.ok(response);
     }
 

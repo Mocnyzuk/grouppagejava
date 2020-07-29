@@ -2,6 +2,8 @@ package com.grouppage.security.jwt;
 
 import com.grouppage.domain.entity.User;
 import com.grouppage.domain.notmapped.Token;
+import com.grouppage.exception.WrongCredentialsException;
+import com.grouppage.security.CustomUserDetailsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -11,6 +13,7 @@ import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -31,18 +34,22 @@ public class JwtProvider {
     public final String accessCookieName;
     public final String refreshCookieName;
 
+
+    private final CustomUserDetailsService customUserDetailsService;
+
     public JwtProvider(
             @Value("${security.jwt.token.secret-key}") String secretKey,
-            @Value("${security.jwt.token.expiration}")long accessTokenExpirationTime,
-            @Value("${security.jwt.token.refresh.expiration}")long refreshTokenExpirationTime,
-            @Value("${security.jwt.token.accessTokenCookieName}")String accessCookieName,
-            @Value("${security.jwt.token.refreshTokenCookieName}")String refreshCookieName
-    ) {
+            @Value("${security.jwt.token.expiration}") long accessTokenExpirationTime,
+            @Value("${security.jwt.token.refresh.expiration}") long refreshTokenExpirationTime,
+            @Value("${security.jwt.token.accessTokenCookieName}") String accessCookieName,
+            @Value("${security.jwt.token.refreshTokenCookieName}") String refreshCookieName,
+            CustomUserDetailsService customUserDetailsService) {
         this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
         this.accessTokenExpirationTime = accessTokenExpirationTime;
         this.refreshTokenExpirationTime = refreshTokenExpirationTime;
         this.accessCookieName = accessCookieName;
         this.refreshCookieName = refreshCookieName;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     public Token generateToken(User user, boolean access){
@@ -144,5 +151,9 @@ public class JwtProvider {
                 "",
                 0L,
                 null);
+    }
+    public UserDetails getPrincipalFromToken(String tokenString)throws WrongCredentialsException {
+        String email = this.getEmail(tokenString);
+        return customUserDetailsService.loadUserByUsername(email);
     }
 }
