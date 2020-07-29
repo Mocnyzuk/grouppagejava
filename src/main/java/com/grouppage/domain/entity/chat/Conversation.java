@@ -32,7 +32,7 @@ public class Conversation extends AbstractEntityDate {
 
 
     @Size(min = 1, max = 5)
-    @ManyToMany(targetEntity = Participant.class, fetch = FetchType.EAGER)
+    @ManyToMany(targetEntity = Participant.class)
     private List<Participant> participants = new ArrayList<>();
 
 }

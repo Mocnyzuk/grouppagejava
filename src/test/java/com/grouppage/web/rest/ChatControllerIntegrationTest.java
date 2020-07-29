@@ -2,15 +2,14 @@ package com.grouppage.web.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.grouppage.domain.entity.Participant;
 import com.grouppage.domain.entity.chat.Conversation;
+import com.grouppage.domain.repository.ParticipantRepository;
 import com.grouppage.domain.repository.chat.ConversationRepository;
 import com.grouppage.domain.response.AddParticipantRequest;
 import com.grouppage.domain.response.LoginRequest;
 import com.grouppage.exception.ConversationNotFoundException;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Transactional
 class ChatControllerIntegrationTest {
 
     @LocalServerPort
@@ -118,12 +118,16 @@ class ChatControllerIntegrationTest {
         ));
 
     }
-    @AfterAll
+    @AfterEach
     void deleteInsertionFromTests(){
         Conversation conv = conversationRepository.findById(1L).orElseThrow(
                 () -> new ConversationNotFoundException("not found")
         );
-        conv.setParticipants(conv.getParticipants().stream().filter(p -> p.getId() != 37).collect(Collectors.toList()));
+        List<Participant> participants = conv.getParticipants();
+        conv.setParticipants(participants
+                .stream()
+                .filter(p -> p.getId() != 37)
+                .collect(Collectors.toList()));
         conversationRepository.save(conv);
     }
 

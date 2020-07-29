@@ -33,7 +33,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
+@Transactional()
 public class ChatService {
 
     private final ParticipantRepository participantRepository;
@@ -110,7 +110,7 @@ public class ChatService {
             message.setConversation(conversationFuture);
             message.setType(socketMessage.getType().name());
             return message;
-                }
+            }
         );
 
         List<Long> userIds = fromConv.stream().map(p -> p.getUser().getId()).distinct().collect(Collectors.toList());
@@ -192,11 +192,10 @@ public class ChatService {
         return participant.getUser().getId() != user.getId();
     }
     public void addNewParticipantToConversation(AddParticipantRequest request) throws ExecutionException, InterruptedException {
-        Future<Conversation> futureConv = execService.executeCallable(()->conversationRepository.findById(request.getConversationId())
-                .orElseThrow(() -> new ConversationNotFoundException("Conversation with id: "+request.getConversationId()+ " doesnt exists!")));
+        Conversation conv = this.conversationRepository.findById(request.getConversationId())
+                .orElseThrow(() -> new ConversationNotFoundException("Conversation with id: "+request.getConversationId()+ " doesnt exists!"));
         Future<Participant> futurePart = execService.executeCallable(()->participantRepository.findById(request.getParticipantId())
                 .orElseThrow(() -> new ParticipantNotFountException("Participant with id: "+ request.getParticipantId()+" doesnt exists!")));
-        Conversation conv = futureConv.get();
         List<Participant> fromConv = conv.getParticipants();
         fromConv.add(futurePart.get());
         conv.setParticipants(fromConv);
