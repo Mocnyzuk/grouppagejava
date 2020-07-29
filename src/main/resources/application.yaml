@@ -38,3 +38,7 @@ logging:
   level:
     org.springframework.data.couchbase.repository.query: DEBUG
     web: DEBUG
+custom:
+  default:
+    page:
+      size: 20

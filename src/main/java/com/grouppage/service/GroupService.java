@@ -14,11 +14,15 @@ import com.grouppage.exception.ParticipantNotFountException;
 import com.grouppage.exception.PostNotFoundException;
 import com.grouppage.service.auth.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -43,9 +47,12 @@ public class GroupService {
 
     }
 
-    public List<Post> getPostForGroupId(long groupId)throws GroupNotFoundException {
-        return postRepository.findAllByGroupId(groupId);
+    public Page<List<Post>> getPostForGroupId(long groupId, Integer page, Integer size, String sort)throws GroupNotFoundException {
+        Pageable pageable = this.generatePageable(page, size, sort);
+        return postRepository.findAllByGroupId(groupId, pageable);
     }
+
+
 
     public List<GroupSearch> findGroupBySearchPhrase(String phrase) {
         return null;
@@ -95,5 +102,18 @@ public class GroupService {
      private boolean checkOwnerOfParcitipant(Participant participant) {
         User user = this.authService.getUserFromContext();
         return participant.getUser().getId() != user.getId();
+    }
+    private Pageable generatePageable(Integer page, Integer size, String sort) {
+        if(page == null)
+            page = 0;
+        if(size == null)
+            size = 20;
+        if(Objects.isNull(sort)){
+            return PageRequest.of(page, size);
+        }else{
+            // TODO IMPL OF SORTING
+            return PageRequest.of(page, size);
+        }
+
     }
 }

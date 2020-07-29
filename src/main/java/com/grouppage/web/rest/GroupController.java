@@ -6,6 +6,9 @@ import com.grouppage.domain.response.PostedPost;
 import com.grouppage.exception.WrongDataPostedException;
 import com.grouppage.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,9 +21,13 @@ public class GroupController {
 
     private final GroupService groupService;
 
+    private final int pageSize;
+
     @Autowired
-    public GroupController(GroupService groupService) {
+    public GroupController(GroupService groupService,
+                           @Value("${custom.default.page.size}") int pageSize) {
         this.groupService = groupService;
+        this.pageSize = pageSize;
     }
 
 //    @GetMapping
@@ -32,10 +39,13 @@ public class GroupController {
 //    }
 
     @GetMapping("/{groupId}")
-    public ResponseEntity<List<Post>> getAllPosts(
-            @PathVariable long groupId
+    public ResponseEntity<Page<List<Post>>> getAllPosts(
+            @PathVariable long groupId,
+            @RequestParam(value = "size", required = false) Integer size,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "sort", required = false) String sort
     ){
-        List<Post> response = groupService.getPostForGroupId(groupId);
+        Page<List<Post>> response = groupService.getPostForGroupId(groupId, page, size, sort);
         return ResponseEntity.ok(response);
     }
 
