@@ -97,7 +97,7 @@ public class GroupService {
         throw new PostNotFoundException("Post with id: "+postId+" doesnt exists!");
     }
 
-    private boolean checkOwnerOfParcitipant(Participant participant) {
+     private boolean checkOwnerOfParcitipant(Participant participant) {
         User user = this.authService.getUserFromContext();
         return participant.getUser().getId() != user.getId();
     }
