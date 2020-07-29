@@ -4,6 +4,7 @@ import com.grouppage.domain.entity.Group;
 import com.grouppage.domain.entity.Participant;
 import com.grouppage.domain.entity.Post;
 import com.grouppage.domain.entity.User;
+import com.grouppage.domain.logicForAsync.GroupLogicForAsync;
 import com.grouppage.domain.repository.GroupRepository;
 import com.grouppage.domain.repository.ParticipantRepository;
 import com.grouppage.domain.repository.PostRepository;
@@ -20,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.Access;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
@@ -30,16 +30,17 @@ import java.util.Optional;
 @Transactional
 public class GroupService {
 
+    private final GroupLogicForAsync groupLogicForAsync;
+
     private final AuthService authService;
 
-    private final GroupRepository groupRepository;
     private final PostRepository postRepository;
     private final ParticipantRepository participantRepository;
 
     @Autowired
-    public GroupService(AuthService authService, GroupRepository groupRepository, PostRepository postRepository, ParticipantRepository participantRepository) {
+    public GroupService(GroupLogicForAsync groupLogicForAsync, AuthService authService, PostRepository postRepository, ParticipantRepository participantRepository) {
+        this.groupLogicForAsync = groupLogicForAsync;
         this.authService = authService;
-        this.groupRepository = groupRepository;
         this.postRepository = postRepository;
         this.participantRepository = participantRepository;
     }
@@ -61,45 +62,30 @@ public class GroupService {
         return null;
     }
 
-    public synchronized Post upVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException{
+    public int upVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException{
         Participant participant = this.participantRepository.findById(participantId).orElseThrow(
-                () -> new ParticipantNotFountException("Participant with id: " + participantId + " doesnt exists!")
+                () -> new ParticipantNotFountException("Participan with id: "+ participantId + " doesnt exists!")
         );
         if(this.checkOwnerOfParcitipant(participant))
             throw new AccessDeniedException("You dont own this participant");
-        Optional<Post> postBase = this.postRepository.findById(postId);
-        if(postBase.isPresent()){
-            Post postBaseGet = postBase.get();
-            postBaseGet.setReactionCount(postBaseGet.getReactionCount() + 1);
-
-            Post result = this.postRepository.save(postBaseGet);
-            List<Post> liked = participant.getLikedPosts();
-            liked.add(result);
-            participant.setLikedPosts(liked);
-            this.participantRepository.save(participant);
-            return result;
-        }
-        throw new PostNotFoundException("Post with id: "+postId+ " doesnt exists!");
+        this.groupLogicForAsync.upVote(participant, postId);
+        return this.postRepository.findById(postId).orElseThrow(
+                () -> new PostNotFoundException("Post with id: "+postId+" doesnt exists")
+        ).getReactionCount()+1;
 
     }
 
-    public synchronized Post downVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException{
+    public int downVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException{
         Participant participant = this.participantRepository.findById(participantId).orElseThrow(
                 () -> new ParticipantNotFountException("Participant with id: " + participantId + " doesnt exists!")
         );
         if(this.checkOwnerOfParcitipant(participant))
             throw new AccessDeniedException("You dont own this participant");
-        Optional<Post> postBase = this.postRepository.findById(postId);
-        if(postBase.isPresent() && participant.getLikedPosts().contains(postBase.get())){
-            Post post = postBase.get();
-            post.setReactionCount(post.getReactionCount() - 1);
-            List<Post> liked = participant.getLikedPosts();
-            liked.remove(post);
-            participant.setLikedPosts(liked);
-            this.participantRepository.save(participant);
-            return this.postRepository.save(post);
-        }
-        throw new PostNotFoundException("Post with id: "+postId+" doesnt exists!");
+        this.groupLogicForAsync.removeVote(participant, postId);
+        return this.postRepository.findById(postId).orElseThrow(
+                () -> new PostNotFoundException("Post with id: "+postId+" doesnt exists")
+        ).getReactionCount()-1;
+
     }
 
      private boolean checkOwnerOfParcitipant(Participant participant) {

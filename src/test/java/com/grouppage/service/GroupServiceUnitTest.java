@@ -1,6 +1,7 @@
 package com.grouppage.service;
 
 import com.grouppage.domain.entity.*;
+import com.grouppage.domain.logicForAsync.GroupLogicForAsync;
 import com.grouppage.domain.notmapped.HashTag;
 import com.grouppage.domain.repository.GroupRepository;
 import com.grouppage.domain.repository.ParticipantRepository;
@@ -34,6 +35,9 @@ class GroupServiceUnitTest {
     private PostRepository postRepository;
     @Mock
     private ParticipantRepository participantRepository;
+
+    @Mock
+    private GroupLogicForAsync groupLogicForAsync;
 
     @InjectMocks
     private GroupService groupService;
@@ -82,11 +86,9 @@ class GroupServiceUnitTest {
         when(authService.getUserFromContext()).thenReturn(user);
         when(postRepository.findById(any())).thenReturn(Optional.of(post));
         when(postRepository.save(any())).thenReturn(post);
-        Post postResult = this.groupService.upVote(participant.getId(), post.getId());
+        int postResult = this.groupService.upVote(participant.getId(), post.getId());
 
-        assertNotEquals(0, postResult.getReactionCount());
-        assertEquals(post.getId(), postResult.getId());
-        assertEquals(post.getContent(), postResult.getContent());
+        assertNotEquals(0, postResult);
     }
     @Test
     void testForDownVote(){
@@ -101,10 +103,8 @@ class GroupServiceUnitTest {
         when(authService.getUserFromContext()).thenReturn(user);
         when(postRepository.findById(any())).thenReturn(Optional.of(post));
         when(postRepository.save(any())).thenReturn(post);
-        Post postResult = this.groupService.downVote(participant.getId(), post.getId());
+        int postResult = this.groupService.downVote(participant.getId(), post.getId());
 
-        assertNotEquals(1, postResult.getReactionCount());
-        assertEquals(post.getId(), postResult.getId());
-        assertEquals(post.getContent(), postResult.getContent());
+        assertNotEquals(1, postResult);
     }
 }

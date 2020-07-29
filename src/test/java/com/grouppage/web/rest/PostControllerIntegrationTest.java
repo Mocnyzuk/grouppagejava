@@ -110,11 +110,10 @@ class PostControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andDo(print())
                 .andReturn();
-        Post returnedPost = MAPPER.readValue(upVote.getResponse().getContentAsString(), Post.class);
+        Integer returnedPost = MAPPER.readValue(upVote.getResponse().getContentAsString(), Integer.class);
         assertNotNull(returnedPost);
-        assertEquals(testPost.getId(), returnedPost.getId());
         //assertEquals(1, this.participantRepository.findById(this.testParticipan.getId()).get().getLikedPosts().size());
-        assertNotEquals(testPost.getReactionCount(), returnedPost.getReactionCount());
+        assertNotEquals(testPost.getReactionCount(), returnedPost);
 
         MvcResult removeVote = this.mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/post/removevote/" + this.testParticipan.getId())
@@ -124,10 +123,9 @@ class PostControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andDo(print())
                 .andReturn();
-        Post removedVotePost = MAPPER.readValue(removeVote.getResponse().getContentAsString(), Post.class);
+        Integer removedVotePost = MAPPER.readValue(removeVote.getResponse().getContentAsString(), Integer.class);
         assertNotNull(returnedPost);
-        assertEquals(testPost.getId(), returnedPost.getId());
-        assertEquals(testPost.getReactionCount(), removedVotePost.getReactionCount());
+        assertEquals(testPost.getReactionCount(), removedVotePost);
 
     }
 

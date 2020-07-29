@@ -22,7 +22,7 @@ public class PostController {
     }
 
     @PostMapping("/upvote/{participantId}")
-    public ResponseEntity<Post> upVote(
+    public ResponseEntity<Integer> upVote(
             @PathVariable long participantId,
             @RequestParam(name = "id") long postId
     ) throws PostNotFoundException {
@@ -30,7 +30,7 @@ public class PostController {
                 .body(this.groupService.upVote(participantId, postId));
     }
     @PostMapping("/removevote/{participantId}")
-    public ResponseEntity<Post> removeVote(
+    public ResponseEntity<Integer> removeVote(
             @PathVariable long participantId,
             @RequestParam(name = "id") long postId
     )throws PostNotFoundException{

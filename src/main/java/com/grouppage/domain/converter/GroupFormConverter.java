@@ -28,7 +28,7 @@ public class GroupFormConverter implements AttributeConverter<GroupForm, String>
     }
 
     @Override
-    public GroupForm convertToEntityAttribute(String s) {
+    public GroupForm convertToEntityAttribute(String s) throws GroupFormException{
         Map<String, String> map = new HashMap<>();
         Arrays.stream(s.split(";")).forEach(q -> {
             String[] arr = q.split("=");
