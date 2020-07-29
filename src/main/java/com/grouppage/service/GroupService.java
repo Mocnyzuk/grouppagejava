@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.Access;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
@@ -47,7 +48,9 @@ public class GroupService {
 
     }
 
-    public Page<List<Post>> getPostForGroupId(long groupId, Integer page, Integer size, String sort)throws GroupNotFoundException {
+    public Page<List<Post>> getPostForGroupId(long groupId, Integer page, Integer size, String sort)throws GroupNotFoundException, AccessDeniedException {
+        if(!this.checkIfUserIsParticipantInGroup(groupId))
+            throw new AccessDeniedException("You do not participate in this group!");
         Pageable pageable = this.generatePageable(page, size, sort);
         return postRepository.findAllByGroupId(groupId, pageable);
     }
@@ -102,6 +105,11 @@ public class GroupService {
      private boolean checkOwnerOfParcitipant(Participant participant) {
         User user = this.authService.getUserFromContext();
         return participant.getUser().getId() != user.getId();
+    }
+    private boolean checkIfUserIsParticipantInGroup(long groupId){
+        User user = this.authService.getUserFromContext();
+        List<Participant> participants = this.participantRepository.findAllByUser(user);
+        return participants.stream().anyMatch(p -> p.getGroup().getId() == groupId);
     }
     private Pageable generatePageable(Integer page, Integer size, String sort) {
         if(page == null)
