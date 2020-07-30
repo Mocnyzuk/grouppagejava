@@ -2,6 +2,7 @@ package com.grouppage.web.rest;
 
 import com.grouppage.domain.entity.Group;
 import com.grouppage.domain.entity.Post;
+import com.grouppage.domain.response.GroupSearch;
 import com.grouppage.domain.response.PostedPost;
 import com.grouppage.exception.WrongDataPostedException;
 import com.grouppage.service.GroupService;
@@ -21,31 +22,30 @@ public class GroupController {
 
     private final GroupService groupService;
 
-    private final int pageSize;
+
 
     @Autowired
-    public GroupController(GroupService groupService,
-                           @Value("${custom.default.page.size}") int pageSize) {
+    public GroupController(GroupService groupService) {
         this.groupService = groupService;
-        this.pageSize = pageSize;
     }
 
-//    @GetMapping
-//    public ResponseEntity<List<GroupSearch>> searchGroups(
-//            @RequestParam(name = "search") String phrase
-//    ){
-//        List<GroupSearch> response = apiGroupService.findGroupBySearchPhrase(phrase);
-//        return ResponseEntity.ok(response);
-//    }
+    @GetMapping
+    public ResponseEntity<Page<Group>> searchGroups(
+            @RequestParam(name = "search") String phrase,
+            @RequestParam(value = "sort", required = false) String sort
+    ){
+        Page<Group> response = groupService.findGroupBySearchPhrase(phrase, sort);
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/{groupId}")
-    public ResponseEntity<Page<List<Post>>> getAllPosts(
+    public ResponseEntity<Page<Post>> getAllPosts(
             @PathVariable long groupId,
             @RequestParam(value = "size", required = false) Integer size,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "sort", required = false) String sort
     ){
-        Page<List<Post>> response = groupService.getPostForGroupId(groupId, page, size, sort);
+        Page<Post> response = groupService.getPostForGroupId(groupId, page, size, sort);
         return ResponseEntity.ok(response);
     }
 

@@ -12,5 +12,9 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAllByGroup(Group group);
 
-    Page<List<Post>> findAllByGroupId(long group_id, Pageable pageable);
+    Page<Post> findAllByGroupId(long group_id, Pageable pageable);
+
+    Page<Post> findAllByGroup(Group group, Pageable pageable);
+
+
 }

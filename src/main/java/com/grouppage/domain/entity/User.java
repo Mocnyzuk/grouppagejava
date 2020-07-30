@@ -23,6 +23,7 @@ import java.util.List;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "user_table")
 public class User extends AbstractEntityDate{
 
     @Id
