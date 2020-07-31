@@ -10,14 +10,15 @@ import java.util.stream.Collectors;
 public class HashTagConverter implements AttributeConverter<List<HashTag>, String> {
     @Override
     public String convertToDatabaseColumn(List<HashTag> hashTagList) {
-        return hashTagList.stream()
-                .map(h -> h.getHashTag())
+
+        return hashTagList == null ? null : hashTagList.stream()
+                .map(HashTag::getHashTag)
                 .collect(Collectors.joining(";"));
     }
 
     @Override
     public List<HashTag> convertToEntityAttribute(String s) {
-        return Arrays.stream(s.split(";"))
+        return s == null ? null : Arrays.stream(s.split(";"))
                 .map(HashTag::new)
                 .collect(Collectors.toList());
     }

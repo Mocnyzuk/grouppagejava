@@ -30,4 +30,12 @@ class GroupRepositoryIntegrationTest {
         );
         assertEquals(group.getName(), fromDB.getName());
     }
+    @Test
+    void proceedGroupSearchTest(){
+        fail();
+    }
+
+    private void persistDataForProceedGroupSearchTest(){
+
+    }
 }
