@@ -32,7 +32,7 @@ class GroupRepositoryIntegrationTest {
     }
     @Test
     void proceedGroupSearchTest(){
-        fail();
+        fail("NOT IMPLEMENTED YET");
     }
 
     private void persistDataForProceedGroupSearchTest(){

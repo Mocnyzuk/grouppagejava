@@ -12,6 +12,9 @@ import java.util.Map;
 public class GroupFormConverter implements AttributeConverter<GroupForm, String> {
     @Override
     public String convertToDatabaseColumn(GroupForm groupForm) throws GroupFormException {
+        if(groupForm == null){
+            return null;
+        }
         Collection<Pair<String, String>> values = groupForm.getPairs();
         if(values.stream().noneMatch(p -> p.getValue().isEmpty())){
             throw new GroupFormException("SOmething went wrong during parsing GroupForm");
@@ -29,6 +32,9 @@ public class GroupFormConverter implements AttributeConverter<GroupForm, String>
 
     @Override
     public GroupForm convertToEntityAttribute(String s) throws GroupFormException{
+        if(s == null){
+            return null;
+        }
         Map<String, String> map = new HashMap<>();
         Arrays.stream(s.split(";")).forEach(q -> {
             String[] arr = q.split("=");
@@ -43,7 +49,7 @@ public class GroupFormConverter implements AttributeConverter<GroupForm, String>
                 });
                 map.put(pair.getKey(), pair.getValue());
             }else {
-                throw new GroupFormException("SOmethging went wrong when aprsing");
+                throw new GroupFormException("Something went wrong when parsing");
             }
         });
         return new GroupForm(map);

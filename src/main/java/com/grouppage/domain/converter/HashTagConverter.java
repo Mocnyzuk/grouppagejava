@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 public class HashTagConverter implements AttributeConverter<List<HashTag>, String> {
     @Override
     public String convertToDatabaseColumn(List<HashTag> hashTagList) {
-
         return hashTagList == null ? null : hashTagList.stream()
                 .map(HashTag::getHashTag)
                 .collect(Collectors.joining(";"));
