@@ -1,6 +1,8 @@
 package com.grouppage.domain.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -12,7 +14,10 @@ import javax.persistence.criteria.CriteriaBuilder;
 import java.io.Serializable;
 import java.time.Instant;
 
+@Data
 @MappedSuperclass
+@NoArgsConstructor
+@AllArgsConstructor
 public class AbstractEntityDate implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -34,19 +39,4 @@ public class AbstractEntityDate implements Serializable {
         this.lastModifiedDate = Instant.now();
     }
 
-    public Instant getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Instant createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public Instant getLastModifiedDate() {
-        return lastModifiedDate;
-    }
-
-    public void setLastModifiedDate(Instant lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
-    }
 }

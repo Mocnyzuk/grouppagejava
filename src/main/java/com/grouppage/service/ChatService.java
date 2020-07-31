@@ -33,7 +33,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional()
+@Transactional
 public class ChatService {
 
     private final ParticipantRepository participantRepository;
@@ -98,7 +98,7 @@ public class ChatService {
         List<Participant> fromConv = conversationFuture.getParticipants();
         if(fromConv.stream().noneMatch(p -> p.getId() == socketMessage.getParticipantId()))
             throw new AccessDeniedException("You have no permission do send messages here!");
-        Future<PrivateMessage> messageFuture = execService.executeCallable( () -> {
+        Future<PrivateMessage> messageFuture = execService.executeCallable(() -> {
             PrivateMessage message = new PrivateMessage();
             if(socketMessage.getContent() == null){
                 socketMessage.setContent("");

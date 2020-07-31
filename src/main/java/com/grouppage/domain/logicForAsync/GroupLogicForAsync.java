@@ -4,6 +4,8 @@ import com.grouppage.domain.entity.Group;
 import com.grouppage.domain.entity.Participant;
 import com.grouppage.domain.entity.Post;
 import com.grouppage.domain.entity.User;
+import com.grouppage.domain.notmapped.GroupLight;
+import com.grouppage.domain.notmapped.PostLight;
 import com.grouppage.domain.repository.GroupRepository;
 import com.grouppage.domain.repository.ParticipantRepository;
 import com.grouppage.domain.repository.PostRepository;
@@ -13,6 +15,7 @@ import com.grouppage.exception.PostNotFoundException;
 import com.grouppage.service.ExecService;
 import com.grouppage.service.auth.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.security.cert.CollectionCertStoreParameters;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
@@ -80,14 +84,23 @@ public class GroupLogicForAsync {
     public Future<List<DashboardResponse>> generateDashboard(User user) {
         return this.execService.executeCallable(() -> {
             List<DashboardResponse> list = new ArrayList<>(5);
-            List<Participant> participants = this.participantRepository.findAllByUserId(user.getId());
-            List<Group> groups = participants.stream().map(Participant::getGroup).collect(Collectors.toList());
+            List<Participant> participants = this.participantRepository.findAllByUserIdFetchGroup(user.getId());
+            List<Group> groups = participants
+                    .stream()
+                    .map(Participant::getGroup)
+                    .filter(Group.distinctByKeys(Group::getId))
+                    .collect(Collectors.toList());
+            List<Post> posts = this.postRepository.findLatestPostFromGroups(groups);
             groups.forEach(g -> {
                 DashboardResponse response = new DashboardResponse();
                 response.setPosts(
-                        this.postRepository.findAllByGroup(g, PageRequest.of(0, 5, Sort.by("createdDate").descending())).getContent());
-                //.orElseThrow(() -> new PostNotFoundException("Wrong data proccesing exception")));
-                response.setGroup(g);
+                        posts.stream().filter(p -> p.getGroup().getId() == g.getId())
+                                .sorted(Comparator.comparing(Post::getCreatedDate).reversed())
+                                .limit(5)
+                                .map(PostLight::fromPost)
+                                .collect(Collectors.toList())
+                );
+                response.setGroup(GroupLight.fromGroup(g));
                 list.add(response);
             });
             return list;

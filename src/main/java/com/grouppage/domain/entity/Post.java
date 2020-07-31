@@ -25,11 +25,11 @@ public class Post extends AbstractEntityDate{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne(targetEntity = Group.class)
+    @ManyToOne(targetEntity = Group.class, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Group group;
 
-    @ManyToOne(targetEntity = Participant.class)
-    @JsonIgnore
+    @ManyToOne(targetEntity = Participant.class, fetch = FetchType.LAZY)
     private Participant author;
 
     // TODO remove SQL injection posiibility

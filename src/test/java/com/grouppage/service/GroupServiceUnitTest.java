@@ -54,7 +54,7 @@ class GroupServiceUnitTest {
         Group group = new Group();
         group.setParticipantCount(2);
         group.setReaction(new Reaction());
-        group.setCreator_id(1);
+        group.setCreatorId(1);
         group.setForm(false);
         group.setPrivate(false);
         group.setCategory("IT");

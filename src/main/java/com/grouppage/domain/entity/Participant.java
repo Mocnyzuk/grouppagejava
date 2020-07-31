@@ -26,14 +26,14 @@ public class Participant extends AbstractEntityDate{
     @NotNull
     private String nickname;
 
-    @ManyToMany(targetEntity = Post.class)
+    @ManyToMany(targetEntity = Post.class, fetch = FetchType.LAZY)
     //@JsonIgnoreProperties("author")
     private List<Post> likedPosts = new ArrayList<>();
 
-    @ManyToOne(targetEntity = User.class)
+    @ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
     private User user;
 
-    @ManyToOne(targetEntity = Group.class)
+    @ManyToOne(targetEntity = Group.class, fetch = FetchType.LAZY)
     private Group group;
 
     private boolean isEnabled = false;

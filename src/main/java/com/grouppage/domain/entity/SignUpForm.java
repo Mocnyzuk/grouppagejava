@@ -19,7 +19,7 @@ public class SignUpForm extends AbstractEntityDate{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne(targetEntity = Group.class)
+    @ManyToOne(targetEntity = Group.class, fetch = FetchType.LAZY)
     private Group group;
 
     @Column(columnDefinition = "varchar(255) default 'example'")

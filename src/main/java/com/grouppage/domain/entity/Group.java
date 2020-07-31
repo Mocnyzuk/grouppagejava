@@ -4,10 +4,19 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.NaturalId;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -31,7 +40,7 @@ public class Group extends AbstractEntityDate{
     @Column(columnDefinition = "boolean default false")
     private boolean isPrivate;
 
-    @ManyToOne(targetEntity = Reaction.class)
+    @ManyToOne(targetEntity = Reaction.class, fetch = FetchType.LAZY)
     private Reaction reaction;
 
     @Column(columnDefinition = "boolean default false")
@@ -47,5 +56,19 @@ public class Group extends AbstractEntityDate{
 
     private String imageId;
 
-    private long creator_id;
+    private long creatorId;
+
+    public static <T> Predicate<T> distinctByKeys(Function<? super T, ?>... keyExtractors)
+    {
+        final Map<List<?>, Boolean> seen = new ConcurrentHashMap<>();
+
+        return t ->
+        {
+            final List<?> keys = Arrays.stream(keyExtractors)
+                    .map(ke -> ke.apply(t))
+                    .collect(Collectors.toList());
+
+            return ((ConcurrentHashMap) seen).putIfAbsent(keys, Boolean.TRUE) == null;
+        };
+    }
 }

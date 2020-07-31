@@ -26,10 +26,10 @@ public class PrivateMessage extends AbstractEntityDate {
     @NotNull
     private String content;
 
-    @ManyToOne(targetEntity = Participant.class)
+    @ManyToOne(targetEntity = Participant.class, fetch = FetchType.LAZY)
     private Participant sender;
 
-    @ManyToOne(targetEntity = Conversation.class)
+    @ManyToOne(targetEntity = Conversation.class, fetch = FetchType.LAZY)
     private Conversation conversation;
 
 }

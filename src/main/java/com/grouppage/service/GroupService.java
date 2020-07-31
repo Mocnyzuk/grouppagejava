@@ -79,7 +79,7 @@ public class GroupService {
         return this.groupRepository.proceedGroupSearch(phrase, pageable);
     }
 
-    public int upVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException{
+    public synchronized int upVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException{
         Participant participant = this.participantRepository.findById(participantId).orElseThrow(
                 () -> new ParticipantNotFountException("Participan with id: "+ participantId + " doesnt exists!")
         );
@@ -92,7 +92,7 @@ public class GroupService {
 
     }
 
-    public int downVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException{
+    public synchronized int downVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException{
         Participant participant = this.participantRepository.findById(participantId).orElseThrow(
                 () -> new ParticipantNotFountException("Participant with id: " + participantId + " doesnt exists!")
         );
@@ -101,8 +101,8 @@ public class GroupService {
         this.groupLogicForAsync.removeVote(participant, postId);
         return this.postRepository.findById(postId).orElseThrow(
                 () -> new PostNotFoundException("Post with id: "+postId+" doesnt exists")
-        ).getReactionCount()-1;
-
+        ).getReactionCount();
+        // TODO REFACTOR UPVOTING AND DOWNVOTING LOGIC HANDLING AND SAVING TO DB
     }
 
      private boolean checkOwnerOfParcitipant(Participant participant) {
