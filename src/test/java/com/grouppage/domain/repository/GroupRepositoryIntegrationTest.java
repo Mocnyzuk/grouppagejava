@@ -9,6 +9,10 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -32,10 +36,22 @@ class GroupRepositoryIntegrationTest {
     }
     @Test
     void proceedGroupSearchTest(){
-        fail("NOT IMPLEMENTED YET");
+        String it = "it";
+
+        List<Group> all = this.groupRepository.findAll();
+        List<Group> filtered = all.stream()
+                .filter(g -> g.getCategory().toUpperCase().contains(it.toUpperCase()) || g.getName().toUpperCase().contains(it.toUpperCase()) || g.getDescription().toUpperCase().contains(it.toUpperCase()))
+                .collect(Collectors.toList());
+        List<Group> searchResult = this.groupRepository.proceedGroupSearch(it);
+        assertArrayEquals(filtered.toArray(), searchResult.toArray());
     }
 
     private void persistDataForProceedGroupSearchTest(){
 
+
+    }
+
+    private Group generateGroup(String s){
+        return null;
     }
 }

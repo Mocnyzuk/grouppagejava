@@ -19,5 +19,9 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             "or (g.description like %:param%) or (g.name like %:param%))")
     Page<Group> proceedGroupSearch(String param, Pageable pageable);
 
+    @Query(value = "select g from Group g where (g.isPrivate = false) and ((g.category like %:param% )" +
+            "or (g.description like %:param%) or (g.name like %:param%))")
+    List<Group> proceedGroupSearch(String param);
+
 
 }
