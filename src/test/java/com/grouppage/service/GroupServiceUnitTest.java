@@ -86,7 +86,8 @@ class GroupServiceUnitTest {
         when(authService.getUserFromContext()).thenReturn(user);
         when(postRepository.findById(any())).thenReturn(Optional.of(post));
         when(postRepository.save(any())).thenReturn(post);
-        when(groupLogicForAsync.upVote(any(), any())).thenReturn(Executors.newSingleThreadExecutor().submit(
+        when(groupLogicForAsync.upVote(any(Participant.class), anyLong()))
+                .thenReturn(Executors.newSingleThreadExecutor().submit(
                 () -> post1
         ));
         Post postResult = this.groupService.upVote(participant.getId(), post.getId());
@@ -109,7 +110,7 @@ class GroupServiceUnitTest {
         when(authService.getUserFromContext()).thenReturn(user);
         when(postRepository.findById(any())).thenReturn(Optional.of(post));
         when(postRepository.save(any())).thenReturn(post);
-        when(groupLogicForAsync.removeVote(any(), any())).thenReturn(Executors.newSingleThreadExecutor().submit(
+        when(groupLogicForAsync.removeVote(any(Participant.class), anyLong())).thenReturn(Executors.newSingleThreadExecutor().submit(
                 () -> post1
         ));
         Post postResult = this.groupService.downVote(participant.getId(), post.getId());
