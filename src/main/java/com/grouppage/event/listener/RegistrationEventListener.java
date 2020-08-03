@@ -1,6 +1,5 @@
 package com.grouppage.event.listener;
 
-import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.grouppage.event.RegistrationEvent;
 import com.grouppage.service.MailService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -2,7 +2,6 @@ package com.grouppage.web.rest;
 
 import com.grouppage.domain.notmapped.SocketMessage;
 import com.grouppage.domain.response.AddParticipantRequest;
-import com.grouppage.domain.response.PostedMessage;
 import com.grouppage.service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

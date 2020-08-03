@@ -5,7 +5,6 @@ import com.grouppage.exception.WrongCredentialsException;
 import com.grouppage.security.CustomUserDetailsService;
 import com.grouppage.security.jwt.JwtProvider;
 import com.grouppage.security.jwt.SecurityCipher;
-import lombok.SneakyThrows;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,7 +18,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {

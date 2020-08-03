@@ -1,6 +1,5 @@
 package com.grouppage.domain.notmapped;
 
-import com.grouppage.domain.entity.Participant;
 import com.grouppage.domain.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,13 +1,11 @@
 package com.grouppage.web.rest;
 
-import com.grouppage.domain.entity.Participant;
 import com.grouppage.domain.entity.Post;
 import com.grouppage.exception.PostNotFoundException;
 import com.grouppage.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.UsesJava8;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.ExecutionException;

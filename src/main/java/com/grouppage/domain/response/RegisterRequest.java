@@ -8,11 +8,9 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import javax.validation.constraints.Digits;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Size;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
 

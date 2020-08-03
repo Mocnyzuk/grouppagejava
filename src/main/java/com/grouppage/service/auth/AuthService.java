@@ -5,7 +5,6 @@ import com.grouppage.domain.notmapped.Token;
 import com.grouppage.domain.repository.UserRepository;
 import com.grouppage.domain.response.LoginRequest;
 import com.grouppage.domain.response.RegisterRequest;
-import com.grouppage.event.RegistrationEvent;
 import com.grouppage.exception.UsernameAlreadyExists;
 import com.grouppage.exception.WrongDataPostedException;
 import com.grouppage.security.jwt.JwtProvider;

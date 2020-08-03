@@ -1,7 +1,6 @@
 package com.grouppage.domain.entity;
 
 import com.grouppage.domain.converter.AuthoritiesConverter;
-import com.sun.corba.se.spi.ior.IdentifiableFactory;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -12,8 +11,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 import java.time.Instant;
 import java.util.List;
 

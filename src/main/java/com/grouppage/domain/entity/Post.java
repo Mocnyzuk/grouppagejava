@@ -1,7 +1,6 @@
 package com.grouppage.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.grouppage.domain.converter.HashTagConverter;
 import com.grouppage.domain.notmapped.HashTag;
 import lombok.AllArgsConstructor;
@@ -11,8 +10,6 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import java.util.ArrayList;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
