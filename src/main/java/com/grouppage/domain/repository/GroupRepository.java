@@ -24,5 +24,7 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             "or (g.description like %:param%) or (g.name like %:param%))")
     List<Group> proceedGroupSearch(@Param("param") String param);
 
+    Optional<Group> findByInviteCode(String inviteCode);
+
 
 }

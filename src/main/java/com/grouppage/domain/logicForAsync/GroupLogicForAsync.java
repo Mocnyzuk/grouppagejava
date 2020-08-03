@@ -1,28 +1,20 @@
 package com.grouppage.domain.logicForAsync;
 
-import com.grouppage.domain.entity.Group;
-import com.grouppage.domain.entity.Participant;
-import com.grouppage.domain.entity.Post;
-import com.grouppage.domain.entity.User;
+import com.grouppage.domain.entity.*;
 import com.grouppage.domain.notmapped.GroupLight;
 import com.grouppage.domain.notmapped.PostLight;
-import com.grouppage.domain.repository.GroupRepository;
-import com.grouppage.domain.repository.ParticipantRepository;
-import com.grouppage.domain.repository.PostRepository;
+import com.grouppage.domain.repository.*;
 import com.grouppage.domain.response.DashboardResponse;
+import com.grouppage.domain.response.InviteParticipant;
+import com.grouppage.domain.response.RequestNewGroup;
 import com.grouppage.exception.ParticipantNotFountException;
 import com.grouppage.exception.PostNotFoundException;
+import com.grouppage.exception.ReactionNotFoundException;
 import com.grouppage.service.ExecService;
-import com.grouppage.service.auth.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.security.cert.CollectionCertStoreParameters;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -39,13 +31,17 @@ public class GroupLogicForAsync {
     private final GroupRepository groupRepository;
     private final PostRepository postRepository;
     private final ParticipantRepository participantRepository;
+    private final ReactionRepository reactionRepository;
+    private final SignUpFormRepository signUpFormRepository;
 
     @Autowired
-    public GroupLogicForAsync(ExecService execService, GroupRepository groupRepository, PostRepository postRepository, ParticipantRepository participantRepository) {
+    public GroupLogicForAsync(ExecService execService, GroupRepository groupRepository, PostRepository postRepository, ParticipantRepository participantRepository, ReactionRepository reactionRepository, SignUpFormRepository signUpFormRepository) {
         this.execService = execService;
         this.groupRepository = groupRepository;
         this.postRepository = postRepository;
         this.participantRepository = participantRepository;
+        this.reactionRepository = reactionRepository;
+        this.signUpFormRepository = signUpFormRepository;
     }
 
     public Future<Post> upVote (Participant participant, long postId) throws PostNotFoundException, ParticipantNotFountException{
@@ -104,6 +100,43 @@ public class GroupLogicForAsync {
                 list.add(response);
             });
             return list;
+        });
+    }
+
+    public Future<Group> handleNewGroup(RequestNewGroup requestNewGroup, User user) {
+        return this.execService.executeCallable(() -> {
+            Group group = requestNewGroup.toGroup();
+            group.setReaction(this.reactionRepository.findById(requestNewGroup.getReactionId()).orElseThrow(
+                    () -> new ReactionNotFoundException("Reaction with given id doesnt exists!")
+            ));
+            group.setParticipantCount(1);
+            group = this.groupRepository.save(group);
+
+            SignUpForm form = requestNewGroup.toSignUpForm();
+            form.setGroup(group);
+            Participant participant = requestNewGroup.toParticipant();
+            participant.setGroup(group);
+            participant.setUser(user);
+            participant.setEnabled(true);
+            this.signUpFormRepository.save(form);
+            participant = this.participantRepository.save(participant);
+            group.setCreatorId(participant.getId());
+            return this.groupRepository.save(group);
+        });
+    }
+
+    public Future<Participant> handleNewParticipant(InviteParticipant inviteParticipant, String id, User user) {
+        return this.execService.executeCallable(() -> {
+            Participant participant = inviteParticipant.getParticipant();
+            Group group = GroupLight.fromGroupLight(inviteParticipant.getGroupLight());
+            SignUpForm form = inviteParticipant.getSignUpForm();
+            form.setGroup(group);
+            participant.setGroup(group);
+            participant.setUser(user);
+            group.setParticipantCount(group.getParticipantCount() + 1);
+            this.groupRepository.save(group);
+            this.signUpFormRepository.save(form);
+            return this.participantRepository.save(participant);
         });
     }
 }

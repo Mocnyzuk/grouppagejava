@@ -28,4 +28,18 @@ public class GroupLight {
                 group.getInviteCode(), group.getParticipantCount(),
                 group.getImageId(), group.getCreatorId());
     }
+    public static Group fromGroupLight(GroupLight group){
+        Group result = new Group();
+        result.setId(group.getId());
+        result.setCategory(group.getCategory());
+        result.setDescription(group.getDescription());
+        result.setPrivate(group.isPrivate());
+        result.setAccept(group.isAccept());
+        result.setForm(group.isForm());
+        result.setInviteCode(group.getInviteCode());
+        result.setParticipantCount(group.getParticipantCount());
+        result.setImageId(group.getImageId());
+        result.setCreatorId(group.getCreatorId());
+        return result;
+    }
 }
