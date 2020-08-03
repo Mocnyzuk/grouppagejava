@@ -22,10 +22,11 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.data.web.ReactivePageableHandlerMethodArgumentResolver;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-@Disabled
+
 class GroupServiceUnitTest {
     @Mock
     private AuthService authService;
@@ -35,12 +36,8 @@ class GroupServiceUnitTest {
     private PostRepository postRepository;
     @Mock
     private ParticipantRepository participantRepository;
-
-
-
     @Mock
     private GroupLogicForAsync groupLogicForAsync;
-
     @InjectMocks
     private GroupService groupService;
 
@@ -78,25 +75,32 @@ class GroupServiceUnitTest {
     }
 
     @Test
-    void testForUpVoting(){
+    void testForUpVoting() throws ExecutionException, InterruptedException {
         User user = new User();
         user.setId(1);
         Participant participant = new Participant(1, "marek", new ArrayList<>(), user, new Group(), true);
         Post post = new Post(1, new Group(), participant, "lalala", Arrays.asList(new HashTag("#lala")), 0);
+        Post post1 = new Post(1, new Group(), participant, "lalala", Arrays.asList(new HashTag("#lala")), 1);
 
         when(participantRepository.findById(any())).thenReturn(Optional.of(participant));
         when(authService.getUserFromContext()).thenReturn(user);
         when(postRepository.findById(any())).thenReturn(Optional.of(post));
         when(postRepository.save(any())).thenReturn(post);
-        int postResult = this.groupService.upVote(participant.getId(), post.getId());
+        when(groupLogicForAsync.upVote(any(), any())).thenReturn(Executors.newSingleThreadExecutor().submit(
+                () -> post1
+        ));
+        Post postResult = this.groupService.upVote(participant.getId(), post.getId());
 
-        assertNotEquals(0, postResult);
+        assertEquals(post.getId(), postResult.getId());
+        assertEquals(post.getContent(), postResult.getContent());
+        assertEquals(post.getReactionCount() + 1, postResult.getReactionCount());
     }
     @Test
-    void testForDownVote(){
+    void testForDownVote() throws ExecutionException, InterruptedException {
         User user = new User();
         user.setId(1);
         Post post = new Post(1, new Group(), null, "lalala", Arrays.asList(new HashTag("#lala")), 1);
+        Post post1 = new Post(1, new Group(), null, "lalala", Arrays.asList(new HashTag("#lala")), 0);
         List<Post> liked = new ArrayList<>();
         liked.add(post);
         Participant participant = new Participant(1, "marek", liked, user, new Group(), true);
@@ -105,8 +109,13 @@ class GroupServiceUnitTest {
         when(authService.getUserFromContext()).thenReturn(user);
         when(postRepository.findById(any())).thenReturn(Optional.of(post));
         when(postRepository.save(any())).thenReturn(post);
-        int postResult = this.groupService.downVote(participant.getId(), post.getId());
+        when(groupLogicForAsync.removeVote(any(), any())).thenReturn(Executors.newSingleThreadExecutor().submit(
+                () -> post1
+        ));
+        Post postResult = this.groupService.downVote(participant.getId(), post.getId());
 
-        assertNotEquals(1, postResult);
+        assertEquals(post.getId(), postResult.getId());
+        assertEquals(post.getContent(), postResult.getContent());
+        assertEquals(post.getReactionCount() - 1, postResult.getReactionCount());
     }
 }

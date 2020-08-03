@@ -36,9 +36,6 @@ import java.util.concurrent.TimeoutException;
 @Transactional
 public class GroupService {
 
-
-    private final int pageSize;
-
     private final GroupLogicForAsync groupLogicForAsync;
 
     private final AuthService authService;
@@ -52,12 +49,11 @@ public class GroupService {
                         AuthService authService,
                         PostRepository postRepository,
                         ParticipantRepository participantRepository,
-                        @Value("${custom.default.page.size}") int pageSize, GroupRepository groupRepository) {
+                        GroupRepository groupRepository) {
         this.groupLogicForAsync = groupLogicForAsync;
         this.authService = authService;
         this.postRepository = postRepository;
         this.participantRepository = participantRepository;
-        this.pageSize = pageSize;
         this.groupRepository = groupRepository;
     }
 
@@ -68,41 +64,36 @@ public class GroupService {
     public Page<Post> getPostForGroupId(long groupId, Integer page, Integer size, String sort)throws GroupNotFoundException, AccessDeniedException {
         if(!this.checkIfUserIsParticipantInGroup(groupId))
             throw new AccessDeniedException("You do not participate in this group!");
-        Pageable pageable = this.generatePageable(page, size, sort);
+        Pageable pageable = this.generateDefaultPageable();
         return postRepository.findAllByGroupId(groupId, pageable);
     }
 
 
 
     public Page<Group> findGroupBySearchPhrase(String phrase, String sort) {
-        Pageable pageable = this.generatePageable(null, null, sort);
+        Pageable pageable = this.generateDefaultPageable();
         return this.groupRepository.proceedGroupSearch(phrase, pageable);
     }
 
-    public synchronized int upVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException{
+    public Post upVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException, ExecutionException, InterruptedException {
         Participant participant = this.participantRepository.findById(participantId).orElseThrow(
                 () -> new ParticipantNotFountException("Participan with id: "+ participantId + " doesnt exists!")
         );
         if(this.checkOwnerOfParcitipant(participant))
             throw new AccessDeniedException("You dont own this participant");
-        this.groupLogicForAsync.upVote(participant, postId);
-        return this.postRepository.findById(postId).orElseThrow(
-                () -> new PostNotFoundException("Post with id: "+postId+" doesnt exists")
-        ).getReactionCount()+1;
+        Future<Post> future = this.groupLogicForAsync.upVote(participant, postId);
+        return future.get();
 
     }
 
-    public synchronized int downVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException{
+    public Post downVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException, ExecutionException, InterruptedException {
         Participant participant = this.participantRepository.findById(participantId).orElseThrow(
                 () -> new ParticipantNotFountException("Participant with id: " + participantId + " doesnt exists!")
         );
         if(this.checkOwnerOfParcitipant(participant))
             throw new AccessDeniedException("You dont own this participant");
-        this.groupLogicForAsync.removeVote(participant, postId);
-        return this.postRepository.findById(postId).orElseThrow(
-                () -> new PostNotFoundException("Post with id: "+postId+" doesnt exists")
-        ).getReactionCount();
-        // TODO REFACTOR UPVOTING AND DOWNVOTING LOGIC HANDLING AND SAVING TO DB
+        Future<Post> future = this.groupLogicForAsync.removeVote(participant, postId);
+        return future.get();
     }
 
      private boolean checkOwnerOfParcitipant(Participant participant) {
@@ -111,14 +102,17 @@ public class GroupService {
     }
     private boolean checkIfUserIsParticipantInGroup(long groupId){
         User user = this.authService.getUserFromContext();
-        List<Participant> participants = this.participantRepository.findAllByUser(user);
+        List<Participant> participants = this.participantRepository.findAllByUserFetchGroup(user);
         return participants.stream().anyMatch(p -> p.getGroup().getId() == groupId);
+    }
+    private Pageable generateDefaultPageable(){
+        return this.generatePageable(0, 20, "nothing");
     }
     private Pageable generatePageable(Integer page, Integer size, String sort) {
         if(page == null)
             page = 0;
         if(size == null)
-            size = this.pageSize;
+            size = 20;
         if(Objects.isNull(sort)){
             return PageRequest.of(page, size);
         }else{
