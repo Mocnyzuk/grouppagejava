@@ -16,9 +16,9 @@ public class GroupFormConverter implements AttributeConverter<GroupForm, String>
             return null;
         }
         Collection<Pair<String, String>> values = groupForm.getPairs();
-        if(values.stream().noneMatch(p -> p.getValue().isEmpty())){
-            throw new GroupFormException("SOmething went wrong during parsing GroupForm");
-        }
+//        if(values.stream().allMatch(p -> p.getValue().isEmpty())){
+//            throw new GroupFormException("SOmething went wrong during parsing GroupForm");
+//        }
         StringBuilder builder = new StringBuilder();
         values.forEach(p -> {
             builder
@@ -41,7 +41,7 @@ public class GroupFormConverter implements AttributeConverter<GroupForm, String>
             if(arr.length == 2){
                 Pair<String, String> pair = new Pair<>();
                 Arrays.stream(arr).forEach(w -> {
-                    if (pair.getKey().isEmpty()) {
+                    if (pair.getKey() == null) {
                         pair.setKey(w);
                     } else {
                         pair.setValue(w);

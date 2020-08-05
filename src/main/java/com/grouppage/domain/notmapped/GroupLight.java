@@ -34,6 +34,7 @@ public class GroupLight {
         result.setCategory(group.getCategory());
         result.setDescription(group.getDescription());
         result.setPrivate(group.isPrivate());
+        result.setName(group.getName());
         result.setAccept(group.isAccept());
         result.setForm(group.isForm());
         result.setInviteCode(group.getInviteCode());

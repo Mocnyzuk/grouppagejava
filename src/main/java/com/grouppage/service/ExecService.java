@@ -24,4 +24,8 @@ public class ExecService {
     public void executeRunnable(Runnable runnable) {
         executor.execute(runnable);
     }
+
+    public AsyncTaskExecutor getExecutor(){
+        return this.executor;
+    }
 }

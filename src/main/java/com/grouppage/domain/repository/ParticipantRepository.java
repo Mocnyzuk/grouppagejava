@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ParticipantRepository extends JpaRepository<Participant, Long> {
 
@@ -24,4 +25,9 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     List<Participant> findAllByGroupIn(Iterable<Group> groups);
 
     List<Participant> findAllByGroupId(long id);
+
+    @Query(value = "select p from Participant p join fetch p.group g where g.id = :id")
+    List<Participant> findAllByGroupIdFetchGroup(@Param("id") long id);
+
+    Optional<Participant> findByNickname(String nickname);
 }

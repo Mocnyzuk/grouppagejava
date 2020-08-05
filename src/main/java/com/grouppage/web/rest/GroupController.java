@@ -1,6 +1,7 @@
 package com.grouppage.web.rest;
 
 import com.grouppage.domain.entity.Group;
+import com.grouppage.domain.entity.Participant;
 import com.grouppage.domain.entity.Post;
 import com.grouppage.domain.notmapped.GroupLight;
 import com.grouppage.domain.response.InviteParticipant;
@@ -14,13 +15,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 @RestController
 @RequestMapping("/api/group")
 public class GroupController {
 
     private final GroupService groupService;
-
-
 
     @Autowired
     public GroupController(GroupService groupService) {
@@ -49,13 +51,13 @@ public class GroupController {
 
     @PostMapping
     public ResponseEntity<Void> handleNewPostInGroup (
-            @RequestParam(name = "group") Group group,
+            @RequestParam(name = "group") String group,
             @RequestBody PostedPost post
     )throws WrongDataPostedException {
         if(post == null){
             throw new WrongDataPostedException("Posted Data doesnt work with our parser");
         }
-        groupService.handleNewPost(post, group);
+        groupService.handleNewPost(post, Long.parseLong(group));
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -63,15 +65,7 @@ public class GroupController {
     public ResponseEntity<Void> createNewGroup(
             @RequestBody RequestNewGroup requestNewGroup
     ){
-        groupService.saveNewGroup(requestNewGroup);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-    @PostMapping("/invite/participant")
-    public ResponseEntity<Void> inviteCodeAccess(
-            @RequestParam(value = "id") String id,
-            @RequestBody InviteParticipant participant
-    ){
-        groupService.handleNewParticipant(participant, id);
+        this.groupService.saveNewGroup(requestNewGroup);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     @GetMapping("/invite")
@@ -80,4 +74,13 @@ public class GroupController {
     ) {
         return ResponseEntity.ok(groupService.getGroupFromInviteCode(id));
     }
+    @PostMapping("/invite/participant")
+    public ResponseEntity<Void> inviteCodeAccess(
+            @RequestParam(value = "id") String id,
+            @RequestBody InviteParticipant participant
+    ) {
+        this.groupService.handleNewParticipant(participant, id);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
 }

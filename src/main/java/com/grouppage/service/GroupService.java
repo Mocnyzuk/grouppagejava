@@ -6,6 +6,7 @@ import com.grouppage.domain.entity.Post;
 import com.grouppage.domain.entity.User;
 import com.grouppage.domain.logicForAsync.GroupLogicForAsync;
 import com.grouppage.domain.notmapped.GroupLight;
+import com.grouppage.domain.notmapped.SocketMessage;
 import com.grouppage.domain.repository.GroupRepository;
 import com.grouppage.domain.repository.ParticipantRepository;
 import com.grouppage.domain.repository.PostRepository;
@@ -25,6 +26,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
@@ -38,6 +40,7 @@ public class GroupService {
     private final GroupLogicForAsync groupLogicForAsync;
 
     private final AuthService authService;
+    private final ChatService chatService;
 
     private final PostRepository postRepository;
     private final ParticipantRepository participantRepository;
@@ -46,18 +49,19 @@ public class GroupService {
     @Autowired
     public GroupService(GroupLogicForAsync groupLogicForAsync,
                         AuthService authService,
-                        PostRepository postRepository,
+                        ChatService chatService, PostRepository postRepository,
                         ParticipantRepository participantRepository,
                         GroupRepository groupRepository) {
         this.groupLogicForAsync = groupLogicForAsync;
         this.authService = authService;
+        this.chatService = chatService;
         this.postRepository = postRepository;
         this.participantRepository = participantRepository;
         this.groupRepository = groupRepository;
     }
 
-    public void handleNewPost(PostedPost postedPost, Group group){
-
+    public void handleNewPost(PostedPost postedPost, long groupId){
+        // TODO impl of handling new post
     }
 
     public Page<Post> getPostForGroupId(long groupId, Integer page, Integer size, String sort)throws GroupNotFoundException, AccessDeniedException {
@@ -139,10 +143,28 @@ public class GroupService {
         return GroupLight.fromGroup(group);
     }
 
-    public Future<Participant> handleNewParticipant(InviteParticipant inviteParticipant, String id) {
-        return this.groupLogicForAsync.
+    public void handleNewParticipant(InviteParticipant inviteParticipant, String id) {
+        User user = this.authService.getUserFromContext();
+        this.groupLogicForAsync.
                 handleNewParticipant(inviteParticipant, id,
-                        this.authService.getUserFromContext());
+                        this.authService.getUserFromContext()).handleAsync(
+                (p, t) -> {
+                    SocketMessage message = new SocketMessage();
+                    message.setParticipantId(0);
+                    String content;
+                    if(t != null){
+                        message.setType(SocketMessage.Type.ERROR);
+                        content = "Error occured -> ".concat(t.getMessage());
+                    }else{
+                        message.setType(SocketMessage.Type.NOTIFICATION);
+                        content = "Success";
+                    }
+                    message.setContent(content);
+                    this.chatService.sendMessageOrPost(Arrays.asList(user.getId()),
+                            message);
+                    return null;
+                }
+        );
 
     }
 }

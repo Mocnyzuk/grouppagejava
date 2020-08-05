@@ -178,7 +178,7 @@ public class ChatService {
             return hashtags;
         });
     }
-    private void sendMessageOrPost(List<Long> userIds, SocketMessage message){
+    public void sendMessageOrPost(List<Long> userIds, SocketMessage message){
         for (Long userId : userIds) {
             execService.executeRunnable(
                     () -> this.simpMessagingTemplate.convertAndSend("/topic/" + userId, message)

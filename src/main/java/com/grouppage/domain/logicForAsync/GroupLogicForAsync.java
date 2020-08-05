@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -125,18 +127,32 @@ public class GroupLogicForAsync {
         });
     }
 
-    public Future<Participant> handleNewParticipant(InviteParticipant inviteParticipant, String id, User user) {
-        return this.execService.executeCallable(() -> {
-            Participant participant = inviteParticipant.getParticipant();
-            Group group = GroupLight.fromGroupLight(inviteParticipant.getGroupLight());
-            SignUpForm form = inviteParticipant.getSignUpForm();
-            form.setGroup(group);
-            participant.setGroup(group);
-            participant.setUser(user);
-            group.setParticipantCount(group.getParticipantCount() + 1);
-            this.groupRepository.save(group);
-            this.signUpFormRepository.save(form);
-            return this.participantRepository.save(participant);
-        });
+    public CompletableFuture<Participant> handleNewParticipant(InviteParticipant inviteParticipant, String id, User user) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    Participant participant = inviteParticipant.getParticipant();
+                    Group group = GroupLight.fromGroupLight(inviteParticipant.getGroupLight());
+                    SignUpForm form = inviteParticipant.getSignUpForm();
+                    form.setGroup(group);
+                    participant.setGroup(group);
+                    participant.setUser(user);
+                    group.setParticipantCount(group.getParticipantCount() + 1);
+                    this.groupRepository.save(group);
+                    this.signUpFormRepository.save(form);
+                    return this.participantRepository.save(participant);
+                }, this.execService.getExecutor()
+        );
+//        return this.execService.executeCallable(() -> {
+//            Participant participant = inviteParticipant.getParticipant();
+//            Group group = GroupLight.fromGroupLight(inviteParticipant.getGroupLight());
+//            SignUpForm form = inviteParticipant.getSignUpForm();
+//            form.setGroup(group);
+//            participant.setGroup(group);
+//            participant.setUser(user);
+//            group.setParticipantCount(group.getParticipantCount() + 1);
+//            this.groupRepository.save(group);
+//            this.signUpFormRepository.save(form);
+//            return this.participantRepository.save(participant);
+//        });
     }
 }

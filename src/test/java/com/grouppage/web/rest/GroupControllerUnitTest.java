@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
-class GroupControllerTest {
+class GroupControllerUnitTest {
     
     @Mock
     private GroupService groupService;
