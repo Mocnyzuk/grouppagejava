@@ -8,12 +8,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class InviteParticipant {
+    @NotNull
     private GroupLight groupLight;
+    @NotNull
     private String nickname;
+    @NotNull
     private GroupForm groupForm;
 
     public Participant getParticipant(){

@@ -5,20 +5,33 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class GroupLight {
+    @NotNull
     private long id;
+    @NotNull
     private String category;
+    @NotNull
     private String name;
+    @NotNull
     private String description;
+    @NotNull
     private boolean isPrivate;
+    @NotNull
     private boolean isAccept;
+    @NotNull
     private boolean isForm;
+    @NotNull
     private String inviteCode;
+    @NotNull
     private int participantCount;
+    @NotNull
     private String imageId;
+    @NotNull
     private long creatorId;
 
     public static GroupLight fromGroup(Group group){

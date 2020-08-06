@@ -8,26 +8,32 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequestNewGroup {
+    @NotNull
     private String nickname;
-
+    @NotNull
     private String name;
+    @NotNull
     private String description;
+    @NotNull
     private String category;
+    @NotNull
     private String imagePath;
-
+    @NotNull
     private boolean isAccept;
+    @NotNull
     private boolean isPrivate;
+    @NotNull
     private boolean isForm;
-
+    @NotNull
     private GroupForm groupForm;
-
-
+    @NotNull
     private long reactionId;
 
     public Group toGroup(){

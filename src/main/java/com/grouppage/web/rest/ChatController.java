@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.concurrent.ExecutionException;
 
 @RestController
@@ -23,7 +24,7 @@ public class ChatController {
 
     @PostMapping("/new")
     public ResponseEntity<Void> saveFirstPrivMessage(
-            @RequestBody SocketMessage socketMessage,
+            @RequestBody @Valid SocketMessage socketMessage,
             @RequestParam String receiver
     ) throws ExecutionException, InterruptedException {
         chatService.handleNewChat(socketMessage, receiver);
@@ -32,7 +33,7 @@ public class ChatController {
 
     @PostMapping("/add")
     public ResponseEntity<Void> addParticipantToConversation(
-            @RequestBody AddParticipantRequest request
+            @RequestBody @Valid AddParticipantRequest request
     ) throws ExecutionException, InterruptedException {
         this.chatService.addNewParticipantToConversation(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();

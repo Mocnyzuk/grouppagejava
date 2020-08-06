@@ -1,8 +1,5 @@
 package com.grouppage.web.rest;
 
-import com.grouppage.domain.entity.Group;
-import com.grouppage.domain.entity.Participant;
-import com.grouppage.domain.entity.Post;
 import com.grouppage.domain.notmapped.GroupLight;
 import com.grouppage.domain.response.InviteParticipant;
 import com.grouppage.domain.response.PostResponse;
@@ -16,8 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 @RestController
 @RequestMapping("/api/group")
@@ -34,18 +31,19 @@ public class GroupController {
     public ResponseEntity<Page<GroupLight>> searchGroups(
             @RequestParam(name = "search") String phrase,
             @RequestParam(value = "page", required = false, defaultValue = "0") String page,
-            @RequestParam(value = "sort", required = false) String sort
+            @RequestParam(value = "size", required = false, defaultValue = "20") Integer size,
+            @RequestParam(value = "sort", required = false, defaultValue = "nosort") String sort
     ){
-        Page<GroupLight> response = groupService.findGroupBySearchPhrase(phrase, page, sort);
+        Page<GroupLight> response = groupService.findGroupBySearchPhrase(phrase, size, page, sort);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{groupId}")
     public ResponseEntity<Page<PostResponse>> getAllPosts(
             @PathVariable long groupId,
-            @RequestParam(value = "size", required = false) Integer size,
-            @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "sort", required = false) String sort
+            @RequestParam(value = "size", required = false, defaultValue = "20") Integer size,
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(value = "sort", required = false, defaultValue = "nosort") String sort
     ){
         Page<PostResponse> response = groupService.getPostForGroupId(groupId, page, size, sort);
         return ResponseEntity.ok(response);
@@ -53,7 +51,7 @@ public class GroupController {
 
     @PostMapping
     public ResponseEntity<Void> handleNewPostInGroup (
-            @RequestBody PostedPost post
+            @RequestBody @Valid PostedPost post
     ) throws WrongDataPostedException, ExecutionException, InterruptedException {
         if((post == null) || (groupService.handleNewPost(post) == null)){
             throw new WrongDataPostedException("Posted Data doesnt work with our parser");
@@ -63,7 +61,7 @@ public class GroupController {
 
     @PostMapping("/new")
     public ResponseEntity<Void> createNewGroup(
-            @RequestBody RequestNewGroup requestNewGroup
+            @RequestBody @Valid RequestNewGroup requestNewGroup
     ){
         this.groupService.saveNewGroup(requestNewGroup);
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -77,7 +75,7 @@ public class GroupController {
     @PostMapping("/invite/participant")
     public ResponseEntity<Void> inviteCodeAccess(
             @RequestParam(value = "id") String id,
-            @RequestBody InviteParticipant participant
+            @RequestBody @Valid InviteParticipant participant
     ) {
         this.groupService.handleNewParticipant(participant, id);
         return ResponseEntity.status(HttpStatus.CREATED).build();
