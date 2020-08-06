@@ -2,20 +2,22 @@ package com.grouppage.web.rest;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.grouppage.domain.entity.Group;
 import com.grouppage.domain.entity.Participant;
+import com.grouppage.domain.entity.Post;
 import com.grouppage.domain.notmapped.GroupForm;
 import com.grouppage.domain.notmapped.GroupLight;
 import com.grouppage.domain.repository.GroupRepository;
 import com.grouppage.domain.repository.ParticipantRepository;
-import com.grouppage.domain.response.InviteParticipant;
-import com.grouppage.domain.response.LoginRequest;
-import com.grouppage.domain.response.RequestNewGroup;
+import com.grouppage.domain.repository.PostRepository;
+import com.grouppage.domain.response.*;
 import com.grouppage.exception.GroupNotFoundException;
 import com.grouppage.exception.ParticipantNotFountException;
+import com.grouppage.service.json.PageModule;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -23,17 +25,21 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import javax.persistence.PostRemove;
 import javax.print.attribute.standard.Media;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -49,6 +55,9 @@ class GroupControllerIntegrationTest {
 
     @Autowired
     private GroupRepository groupRepository;
+
+    @Autowired
+    private PostRepository postRepository;
 
     @Autowired
     private ParticipantRepository participantRepository;
@@ -68,26 +77,125 @@ class GroupControllerIntegrationTest {
     @BeforeAll
     void startUp() throws Exception {
         MAPPER.registerModule(new JavaTimeModule());
+        MAPPER.registerModule(new PageModule());
         accessTokenHeader = this.authAsFpmoles();
 
     }
 
     @Test
-    void shouldReturnGroupsBasedOnSearchPhrase() {
-        // TODO searchgroup method
-        fail();
+    void shouldReturnGroupsBasedOnSearchPhrase() throws Exception {
+        String phrase = "IT";
+        List<GroupLight> all = this.groupRepository.findAll().stream()
+                .map(GroupLight::fromGroup).collect(Collectors.toList());
+        List<GroupLight> expected = all.stream()
+                .filter(g -> g.getName().contains(phrase) ||
+                        g.getDescription().contains(phrase) ||
+                        g.getCategory().contains(phrase))
+                .collect(Collectors.toList());
+
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/group")
+                .header(HttpHeaders.AUTHORIZATION, accessTokenHeader)
+                .param("search", phrase)
+        )
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+        Page<GroupLight> page = MAPPER.readValue(
+                result.getResponse().getContentAsString(),
+                new TypeReference<Page<GroupLight>>() {}
+        );
+        assertNotNull(page);
+        assertEquals(expected.size(), page.toList().size());
+        assertArrayEquals(expected.toArray(), page.toList().toArray());
+    }
+    @Test
+    void shouldReturnNoGroupsBasedOnSearchPhrase() throws Exception {
+        String phrase = "asdas87d6as9d8";
+        List<GroupLight> all = this.groupRepository.findAll().stream()
+                .map(GroupLight::fromGroup).collect(Collectors.toList());
+        List<GroupLight> expected = all.stream()
+                .filter(g -> g.getName().contains(phrase) ||
+                        g.getDescription().contains(phrase) ||
+                        g.getCategory().contains(phrase))
+                .collect(Collectors.toList());
+
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/group")
+                .header(HttpHeaders.AUTHORIZATION, accessTokenHeader)
+                .param("search", phrase)
+        )
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+        Page<GroupLight> page = MAPPER.readValue(
+                result.getResponse().getContentAsString(),
+                new TypeReference<Page<GroupLight>>() {}
+        );
+        assertNotNull(page);
+        assertEquals(expected.size(), page.toList().size());
+        assertEquals(0, page.toList().size());
+        assertArrayEquals(expected.toArray(), page.toList().toArray());
     }
 
     @Test
-    void shouldReturnXNumberOfLatestPostForGroup() {
-        // TODO get a Page of latest Posts method
-        fail();
+    void shouldReturnXNumberOfLatestPostForGroup() throws Exception {
+        Group group = this.groupRepository.findById(1L).orElseThrow(
+                () -> new GroupNotFoundException("NOT FOUND")
+        );
+        List<Post> posts = this.postRepository.findAllByGroupIdFetchAuthor(group.getId());
+        List<PostResponse> responsesFromDB = posts.stream()
+                .map(p -> PostResponse.fromPost(p, 1L))
+                .collect(Collectors.toList());
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/group/"+group.getId())
+                .header(HttpHeaders.AUTHORIZATION, accessTokenHeader)
+                .param("size", "4")
+        )
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+        Page<PostResponse> page = MAPPER.readValue(
+                result.getResponse().getContentAsString(),
+                new TypeReference<Page<PostResponse>>() {}
+        );
+        assertNotNull(page);
+        assertTrue(responsesFromDB.containsAll(page.toList()));
+        assertEquals(4, page.toList().size());
+        assertEquals((posts.size()/4) + 1, page.getTotalPages());
+        assertTrue(posts.size() >= page.toList().size());
     }
 
     @Test
-    void shouldSaveNewPostForGroup() {
-        // TODO posting new post in group
-        fail();
+    void shouldSaveNewPostForGroup() throws Exception {
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/group")
+                .header(HttpHeaders.AUTHORIZATION, accessTokenHeader)
+                .param("group", "1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                        MAPPER.writeValueAsString(
+                                new PostedPost(
+                                        1L,
+                                        1L,
+                                        "nowy post do handlera"
+                                )
+                        )
+                )
+        )
+                .andExpect(status().isCreated())
+                .andDo(print())
+                .andReturn();
+        Thread.sleep(1000);
+        List<Post> posts = this.postRepository.findAllByGroupIdFetchAuthorAndGroup(1L);
+        assertTrue(posts.stream().anyMatch(p -> p.getContent().equals("nowy post do handlera")));
+        assertEquals(1,
+                posts.stream()
+                        .filter(p ->
+                                p.getContent().equals("nowy post do handlera") &&
+                                p.getGroup().getId() == 1L &&
+                                p.getAuthor().getId() == 1L).count()
+        );
     }
 
     @Test

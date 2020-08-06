@@ -6,32 +6,34 @@ import com.grouppage.domain.entity.Post;
 import com.grouppage.domain.entity.User;
 import com.grouppage.domain.logicForAsync.GroupLogicForAsync;
 import com.grouppage.domain.notmapped.GroupLight;
+import com.grouppage.domain.notmapped.HashTag;
 import com.grouppage.domain.notmapped.SocketMessage;
 import com.grouppage.domain.repository.GroupRepository;
 import com.grouppage.domain.repository.ParticipantRepository;
 import com.grouppage.domain.repository.PostRepository;
-import com.grouppage.domain.response.DashboardResponse;
-import com.grouppage.domain.response.InviteParticipant;
-import com.grouppage.domain.response.PostedPost;
-import com.grouppage.domain.response.RequestNewGroup;
+import com.grouppage.domain.response.*;
 import com.grouppage.exception.GroupNotFoundException;
 import com.grouppage.exception.ParticipantNotFountException;
 import com.grouppage.exception.PostNotFoundException;
 import com.grouppage.service.auth.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -42,6 +44,11 @@ public class GroupService {
     private final AuthService authService;
     private final ChatService chatService;
 
+    private final ExecService execService;
+
+    private final String HASH = "H";
+    private final char HASH_CHAR = '#';
+
     private final PostRepository postRepository;
     private final ParticipantRepository participantRepository;
     private final GroupRepository groupRepository;
@@ -49,34 +56,62 @@ public class GroupService {
     @Autowired
     public GroupService(GroupLogicForAsync groupLogicForAsync,
                         AuthService authService,
-                        ChatService chatService, PostRepository postRepository,
+                        ChatService chatService, ExecService execService, PostRepository postRepository,
                         ParticipantRepository participantRepository,
                         GroupRepository groupRepository) {
         this.groupLogicForAsync = groupLogicForAsync;
         this.authService = authService;
         this.chatService = chatService;
+        this.execService = execService;
         this.postRepository = postRepository;
         this.participantRepository = participantRepository;
         this.groupRepository = groupRepository;
     }
 
-    public void handleNewPost(PostedPost postedPost, long groupId){
-        // TODO impl of handling new post
+    public Post handleNewPost(PostedPost postedPost) throws ExecutionException, InterruptedException {
+        Future<List<HashTag>> hashTags = this.getHashTagsFromPost(postedPost.getContent());
+        Post post = new Post();
+        post.setContent(postedPost.getContent());
+        post.setReactionCount(0);
+        CompletableFuture<Void> futureGroup = CompletableFuture.supplyAsync(
+                () -> this.groupRepository.findById(postedPost.getGroupId()).orElseThrow(
+                        () -> new GroupNotFoundException("Group id is wrong")
+                ),
+                execService.getExecutor()
+        ).thenAccept(post::setGroup);
+        CompletableFuture<Void> futureParticipant = CompletableFuture.supplyAsync(
+                () -> this.participantRepository.findById(postedPost.getParticipantId()).orElseThrow(
+                        () -> new ParticipantNotFountException("Given participant doesnt exists")
+                ),
+                execService.getExecutor()
+        ).thenAccept(post::setAuthor);
+        post.setHashTags(hashTags.get());
+        CompletableFuture.allOf(futureGroup, futureParticipant)
+                .thenAccept(
+                        (v) -> this.postRepository.save(post)
+                );
+        return post;
     }
 
-    public Page<Post> getPostForGroupId(long groupId, Integer page, Integer size, String sort)throws GroupNotFoundException, AccessDeniedException {
+    public Page<PostResponse> getPostForGroupId(long groupId, Integer page, Integer size, String sort)throws GroupNotFoundException, AccessDeniedException {
         if(!this.checkIfUserIsParticipantInGroup(groupId))
             throw new AccessDeniedException("You do not participate in this group!");
-        Pageable pageable = this.generateDefaultPageable();
-        return postRepository.findAllByGroupId(groupId, pageable);
+        Pageable pageable = this.generatePageable(page, size, sort);
+        List<PostResponse> posts =  postRepository.findAllByGroupIdFetchAuthor(groupId).stream()
+                .map(p -> PostResponse.fromPost(p, groupId)).collect(Collectors.toList());
+        return this.generatePage(posts, pageable);
     }
 
 
 
-    public Page<Group> findGroupBySearchPhrase(String phrase, String sort) {
-        Pageable pageable = this.generateDefaultPageable();
-        return this.groupRepository.proceedGroupSearch(phrase, pageable);
+    public Page<GroupLight> findGroupBySearchPhrase(String phrase, String page, String sort) throws NumberFormatException{
+        Pageable pageable = this.generateDefaultPageablePageNumber(Integer.parseInt(page));
+        List<GroupLight> groups = this.groupRepository.proceedGroupSearch(phrase).stream()
+                .map(GroupLight::fromGroup).collect(Collectors.toList());
+        return this.generatePage(groups, pageable);
     }
+
+
 
     public Post upVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException, ExecutionException, InterruptedException {
         Participant participant = this.participantRepository.findById(participantId).orElseThrow(
@@ -99,6 +134,12 @@ public class GroupService {
         return future.get();
     }
 
+    private <T> Page<T> generatePage(List<T> list, Pageable pageable){
+        int start = Math.toIntExact(pageable.getOffset());
+        long end = Math.min((start + pageable.getPageSize()), list.size());
+        return new PageImpl<>(list.subList(start, Math.toIntExact(end)), pageable, list.size());
+    }
+
      private boolean checkOwnerOfParcitipant(Participant participant) {
         User user = this.authService.getUserFromContext();
         return participant.getUser().getId() != user.getId();
@@ -108,8 +149,12 @@ public class GroupService {
         List<Participant> participants = this.participantRepository.findAllByUserFetchGroup(user);
         return participants.stream().anyMatch(p -> p.getGroup().getId() == groupId);
     }
+
     private Pageable generateDefaultPageable(){
         return this.generatePageable(0, 20, "nothing");
+    }
+    private Pageable generateDefaultPageablePageNumber(int page) {
+        return this.generatePageable(page, 20, "nothing");
     }
     private Pageable generatePageable(Integer page, Integer size, String sort) {
         if(page == null)
@@ -123,6 +168,28 @@ public class GroupService {
             return PageRequest.of(page, size);
         }
 
+    }
+    private Future<List<HashTag>> getHashTagsFromPost(String post){
+        final String[] content = {post};
+        return execService.executeCallable(() -> {
+            List<HashTag> hashtags = new ArrayList<>();
+            while(content[0].contains(HASH)){
+                int hashIndex = content[0].indexOf(HASH);
+                content[0] = content[0].substring(hashIndex);
+                int index = 0;
+
+                while((content[0].charAt(index) != ' ') && index < 4){
+                    index++;
+                }
+                if(index == 4){
+
+                    hashtags.add(new HashTag(content[0].substring(0, content[0].indexOf(' '))));
+                }else{
+                    content[0] = content[0].substring(index);
+                }
+            }
+            return hashtags;
+        });
     }
 
     public List<DashboardResponse> generateDashboard() throws InterruptedException, ExecutionException, TimeoutException {

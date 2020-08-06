@@ -5,6 +5,7 @@ import com.grouppage.domain.entity.Participant;
 import com.grouppage.domain.entity.Post;
 import com.grouppage.domain.notmapped.GroupLight;
 import com.grouppage.domain.response.InviteParticipant;
+import com.grouppage.domain.response.PostResponse;
 import com.grouppage.domain.response.PostedPost;
 import com.grouppage.domain.response.RequestNewGroup;
 import com.grouppage.exception.WrongDataPostedException;
@@ -30,34 +31,33 @@ public class GroupController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Group>> searchGroups(
+    public ResponseEntity<Page<GroupLight>> searchGroups(
             @RequestParam(name = "search") String phrase,
+            @RequestParam(value = "page", required = false, defaultValue = "0") String page,
             @RequestParam(value = "sort", required = false) String sort
     ){
-        Page<Group> response = groupService.findGroupBySearchPhrase(phrase, sort);
+        Page<GroupLight> response = groupService.findGroupBySearchPhrase(phrase, page, sort);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{groupId}")
-    public ResponseEntity<Page<Post>> getAllPosts(
+    public ResponseEntity<Page<PostResponse>> getAllPosts(
             @PathVariable long groupId,
             @RequestParam(value = "size", required = false) Integer size,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "sort", required = false) String sort
     ){
-        Page<Post> response = groupService.getPostForGroupId(groupId, page, size, sort);
+        Page<PostResponse> response = groupService.getPostForGroupId(groupId, page, size, sort);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping
     public ResponseEntity<Void> handleNewPostInGroup (
-            @RequestParam(name = "group") String group,
             @RequestBody PostedPost post
-    )throws WrongDataPostedException {
-        if(post == null){
+    ) throws WrongDataPostedException, ExecutionException, InterruptedException {
+        if((post == null) || (groupService.handleNewPost(post) == null)){
             throw new WrongDataPostedException("Posted Data doesnt work with our parser");
         }
-        groupService.handleNewPost(post, Long.parseLong(group));
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
