@@ -30,7 +30,7 @@ public class GroupController {
     @GetMapping
     public ResponseEntity<Page<GroupLight>> searchGroups(
             @RequestParam(name = "search") String phrase,
-            @RequestParam(value = "page", required = false, defaultValue = "0") String page,
+            @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "20") Integer size,
             @RequestParam(value = "sort", required = false, defaultValue = "nosort") String sort
     ){

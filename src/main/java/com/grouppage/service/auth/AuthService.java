@@ -1,6 +1,7 @@
 package com.grouppage.service.auth;
 
 import com.grouppage.domain.entity.User;
+import com.grouppage.domain.notmapped.Layout;
 import com.grouppage.domain.notmapped.Token;
 import com.grouppage.domain.repository.UserRepository;
 import com.grouppage.domain.response.LoginRequest;
@@ -24,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -122,6 +124,10 @@ public class AuthService {
         }else{
             throw new WrongDataPostedException("Invalid activation token");
         }
+    }
+
+    public List<Layout> getLayouts() {
+        return this.getUserFromContext().getLayout();
     }
 }
 

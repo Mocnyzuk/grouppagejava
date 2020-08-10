@@ -105,7 +105,7 @@ public class GroupService {
 
 
     public Page<GroupLight> findGroupBySearchPhrase(String phrase, Integer size, String page, String sort) throws NumberFormatException{
-        Pageable pageable = this.generatePageable(Integer.valueOf(page), size, sort);
+        Pageable pageable = this.generatePageable(Integer.parseInt(page) - 1, size, sort);
         List<GroupLight> groups = this.groupRepository.proceedGroupSearch(phrase).stream()
                 .map(GroupLight::fromGroup).collect(Collectors.toList());
         return this.generatePage(groups, pageable);
