@@ -32,9 +32,10 @@ public class GroupController {
             @RequestParam(name = "search") String phrase,
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "20") Integer size,
-            @RequestParam(value = "sort", required = false, defaultValue = "nosort") String sort
+            @RequestParam(value = "sort", required = false, defaultValue = "nosort") String sort,
+            @RequestParam(value = "member", required = false, defaultValue = "true") Boolean member
     ){
-        Page<GroupLight> response = groupService.findGroupBySearchPhrase(phrase, size, page, sort);
+        Page<GroupLight> response = groupService.findGroupBySearchPhrase(phrase, size, page, sort, member);
         return ResponseEntity.ok(response);
     }
 

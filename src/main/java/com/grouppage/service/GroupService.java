@@ -104,10 +104,20 @@ public class GroupService {
 
 
 
-    public Page<GroupLight> findGroupBySearchPhrase(String phrase, Integer size, String page, String sort) throws NumberFormatException{
+    public Page<GroupLight> findGroupBySearchPhrase(String phrase, Integer size, String page, String sort, boolean member) throws NumberFormatException{
         Pageable pageable = this.generatePageable(Integer.parseInt(page) - 1, size, sort);
-        List<GroupLight> groups = this.groupRepository.proceedGroupSearch(phrase).stream()
-                .map(GroupLight::fromGroup).collect(Collectors.toList());
+        List<GroupLight> groups;
+        if(member){
+            List<Participant> participants = this.participantRepository.findAllByUserFetchGroup(this.authService.getUserFromContext());
+            groups = participants.stream()
+                    .map(Participant::getGroup)
+                    .filter(Group.distinctByKeys(Group::getId))
+                    .map(GroupLight::fromGroup)
+                    .collect(Collectors.toList());
+        }else {
+            groups = this.groupRepository.proceedGroupSearch(phrase).stream()
+                    .map(GroupLight::fromGroup).collect(Collectors.toList());
+        }
         return this.generatePage(groups, pageable);
     }
 

@@ -1,6 +1,7 @@
 package com.grouppage.domain.repository;
 
 import com.grouppage.domain.entity.Group;
+import com.grouppage.domain.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,6 +22,10 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     @Query(value = "select g from Group g where (g.isPrivate = false) and ((g.category like %:param% )" +
             "or (g.description like %:param%) or (g.name like %:param%))")
     List<Group> proceedGroupSearch(@Param("param") String param);
+
+    @Query(value = "select g from Group g where (g.isPrivate = false) and ((g.category like %:param% )" +
+            "or (g.description like %:param%) or (g.name like %:param%))")
+    List<Group> proceedGroupSearchMember(@Param("param") String param, @Param("user") User user);
 
     Optional<Group> findByInviteCode(String inviteCode);
 
