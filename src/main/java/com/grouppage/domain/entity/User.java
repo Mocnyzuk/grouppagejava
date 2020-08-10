@@ -1,6 +1,8 @@
 package com.grouppage.domain.entity;
 
 import com.grouppage.domain.converter.AuthoritiesConverter;
+import com.grouppage.domain.converter.LayoutConverter;
+import com.grouppage.domain.notmapped.Layout;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -56,4 +58,9 @@ public class User extends AbstractEntityDate{
 
     @NotNull
     private Instant lastOnline;
+
+    @Convert(converter = LayoutConverter.class)
+    @Column(length = 1000000)
+    @Nullable
+    private List<Layout> layout;
 }

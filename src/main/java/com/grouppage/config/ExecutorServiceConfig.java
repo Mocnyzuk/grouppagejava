@@ -50,9 +50,4 @@ public class ExecutorServiceConfig implements AsyncConfigurer {
         return Executors.newCachedThreadPool();
     }
 
-
-//    @Bean
-//    public AsyncTaskExecutor taskExecutor(){
-//        return new ThreadPoolTaskExecutor();
-//    }
 }
