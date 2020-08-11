@@ -263,7 +263,6 @@ class GroupControllerIntegrationTest {
                 .content(
                         MAPPER.writeValueAsString(
                                 new InviteParticipant(
-                                        GroupLight.fromGroup(group),
                                         "jajajajsdadjsadajsd",
                                         new GroupForm(map)
                                 )

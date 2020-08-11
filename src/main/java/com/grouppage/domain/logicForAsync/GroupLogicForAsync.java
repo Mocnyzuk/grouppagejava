@@ -7,6 +7,7 @@ import com.grouppage.domain.repository.*;
 import com.grouppage.domain.response.DashboardResponse;
 import com.grouppage.domain.response.InviteParticipant;
 import com.grouppage.domain.response.RequestNewGroup;
+import com.grouppage.exception.GroupNotFoundException;
 import com.grouppage.exception.ParticipantNotFountException;
 import com.grouppage.exception.PostNotFoundException;
 import com.grouppage.exception.ReactionNotFoundException;
@@ -131,7 +132,9 @@ public class GroupLogicForAsync {
         return CompletableFuture.supplyAsync(
                 () -> {
                     Participant participant = inviteParticipant.getParticipant();
-                    Group group = GroupLight.fromGroupLight(inviteParticipant.getGroupLight());
+                    Group group = this.groupRepository.findByInviteCode(id).orElseThrow(
+                            () -> new GroupNotFoundException("Group with inviteCode "+ id+ " doesnt exists")
+                    );
                     SignUpForm form = inviteParticipant.getSignUpForm();
                     form.setGroup(group);
                     participant.setGroup(group);

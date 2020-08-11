@@ -15,8 +15,6 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class InviteParticipant {
     @NotNull
-    private GroupLight groupLight;
-    @NotNull
     private String nickname;
     @NotNull
     private GroupForm groupForm;

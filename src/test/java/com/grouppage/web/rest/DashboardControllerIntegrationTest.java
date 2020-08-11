@@ -97,7 +97,6 @@ class DashboardControllerIntegrationTest {
         List<DashboardResponse> responseList = Arrays.stream(response).sorted(Comparator.comparing(d -> d.getGroup().getId())).collect(Collectors.toList());
         List<PostLight> array = map.get(gl).stream().sorted(Comparator.comparing(Post::getCreatedDate).reversed()).limit(5).map(PostLight::fromPost).collect(Collectors.toList());
         assertArrayEquals(array.toArray(), responseList.get(0).getPosts().toArray());
-        assertEquals(groups.stream().sequential().map(GroupLight::fromGroup).toArray()[0], response[0].getGroup());
 
 
     }

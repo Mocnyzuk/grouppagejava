@@ -25,10 +25,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -46,7 +43,7 @@ public class GroupService {
 
     private final ExecService execService;
 
-    private final String HASH = "H";
+    private final String HASH = "#";
     private final char HASH_CHAR = '#';
 
     private final PostRepository postRepository;
@@ -105,13 +102,16 @@ public class GroupService {
 
 
     public Page<GroupLight> findGroupBySearchPhrase(String phrase, Integer size, String page, String sort, boolean member) throws NumberFormatException{
-        Pageable pageable = this.generatePageable(Integer.parseInt(page) - 1, size, sort);
+        Pageable pageable = this.generatePageable(Integer.parseInt(page), size, sort);
         List<GroupLight> groups;
         if(member){
             List<Participant> participants = this.participantRepository.findAllByUserFetchGroup(this.authService.getUserFromContext());
             groups = participants.stream()
                     .map(Participant::getGroup)
                     .filter(Group.distinctByKeys(Group::getId))
+                    .filter(g -> g.getDescription().toUpperCase().contains(phrase.toUpperCase()) ||
+                            g.getName().toUpperCase().contains(phrase.toUpperCase()) ||
+                            g.getCategory().toUpperCase().contains(phrase.toUpperCase()))
                     .map(GroupLight::fromGroup)
                     .collect(Collectors.toList());
         }else {
@@ -161,21 +161,21 @@ public class GroupService {
     }
 
     private Pageable generateDefaultPageable(){
-        return this.generatePageable(0, 20, "nothing");
+        return this.generatePageable(1, 20, "nosort");
     }
     private Pageable generateDefaultPageablePageNumber(int page) {
         return this.generatePageable(page, 20, "nothing");
     }
     private Pageable generatePageable(Integer page, Integer size, String sort) {
         if(page == null)
-            page = 0;
+            page = 1;
         if(size == null)
             size = 20;
         if(Objects.isNull(sort)){
-            return PageRequest.of(page, size);
+            return PageRequest.of(page - 1, size);
         }else{
             // TODO IMPL OF SORTING
-            return PageRequest.of(page, size);
+            return PageRequest.of(page - 1, size);
         }
 
     }
@@ -224,7 +224,7 @@ public class GroupService {
         User user = this.authService.getUserFromContext();
         this.groupLogicForAsync.
                 handleNewParticipant(inviteParticipant, id,
-                        this.authService.getUserFromContext()).handleAsync(
+                        user).handleAsync(
                 (p, t) -> {
                     SocketMessage message = new SocketMessage();
                     message.setParticipantId(0);
@@ -237,7 +237,7 @@ public class GroupService {
                         content = "Success";
                     }
                     message.setContent(content);
-                    this.chatService.sendMessageOrPost(Arrays.asList(user.getId()),
+                    this.chatService.sendMessageOrPost(Collections.singletonList(user.getId()),
                             message);
                     return null;
                 }

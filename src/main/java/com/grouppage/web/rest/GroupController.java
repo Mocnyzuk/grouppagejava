@@ -43,7 +43,7 @@ public class GroupController {
     public ResponseEntity<Page<PostResponse>> getAllPosts(
             @PathVariable long groupId,
             @RequestParam(value = "size", required = false, defaultValue = "20") Integer size,
-            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
             @RequestParam(value = "sort", required = false, defaultValue = "nosort") String sort
     ){
         Page<PostResponse> response = groupService.getPostForGroupId(groupId, page, size, sort);
