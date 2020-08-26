@@ -143,13 +143,15 @@ public class GroupLogicForAsync {
                     Group group = this.groupRepository.findByInviteCode(id).orElseThrow(
                             () -> new GroupNotFoundException("Group with inviteCode "+ id+ " doesnt exists")
                     );
-                    SignUpForm form = inviteParticipant.getSignUpForm();
-                    form.setGroup(group);
+                    if(inviteParticipant.getGroupForm() != null) {
+                        SignUpForm form = inviteParticipant.getSignUpForm();
+                        form.setGroup(group);
+                        this.signUpFormRepository.save(form);
+                    }
                     participant.setGroup(group);
                     participant.setUser(user);
                     group.setParticipantCount(group.getParticipantCount() + 1);
                     this.groupRepository.save(group);
-                    this.signUpFormRepository.save(form);
                     return this.participantRepository.save(participant);
                 }, this.execService.getExecutor()
         );

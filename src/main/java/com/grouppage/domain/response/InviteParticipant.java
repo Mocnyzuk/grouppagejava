@@ -7,6 +7,7 @@ import com.grouppage.domain.notmapped.GroupLight;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.NotNull;
 
@@ -16,7 +17,7 @@ import javax.validation.constraints.NotNull;
 public class InviteParticipant {
     @NotNull
     private String nickname;
-    @NotNull
+    @Nullable
     private GroupForm groupForm;
 
     public Participant getParticipant(){

@@ -9,6 +9,6 @@ import java.util.Optional;
 
 public interface SignUpFormRepository extends JpaRepository<SignUpForm, Long> {
 
-    @Query("select s from SignUpForm s where s.group.id = :groupId")
+    @Query("select s from SignUpForm s where s.group.id = :groupId and s.nickname = 'example'")
     Optional<SignUpForm> findByGroupId(@Param("groupId") long groupId);
 }
