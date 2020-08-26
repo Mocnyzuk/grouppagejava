@@ -3,9 +3,11 @@ package com.grouppage.web.rest;
 import com.grouppage.domain.notmapped.Layout;
 import com.grouppage.service.auth.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -26,22 +28,24 @@ public class LayoutController {
 
     @PostMapping("/single")
     public ResponseEntity<Void> saveLayout(
-            @RequestBody Layout layout
+            @RequestBody @Valid Layout layout
     ){
         this.authService.saveLayout(layout);
-        return null;
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     @PostMapping("/multi")
     public ResponseEntity<Void> saveLayouts(
             @RequestBody List<Layout> layouts
     ){
-        //return this.authService.saveLayout(layout);
-        return null;
+        this.authService.saveLayouts(layouts);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+
     }
     @DeleteMapping("/api/layout/{name}")
     public ResponseEntity<Void> deleteLayout(
             @PathVariable(name = "name") String name
     ){
+        this.authService.deleteLayout(name);
         return null;
     }
 }

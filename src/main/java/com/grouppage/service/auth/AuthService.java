@@ -25,10 +25,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -135,7 +137,31 @@ public class AuthService {
     }
 
     public void saveLayout(Layout layout) {
-        //User user =
+        User user = this.getUserFromContext();
+        List<Layout> layouts = user.getLayout();
+        if(layout != null){
+            layouts.add(layout);
+        }else{
+            user.setLayout(new ArrayList<Layout>(){{add(layout);}});
+        }
+        this.userRepository.save(user);
+    }
+
+    public void saveLayouts(List<Layout> layouts) {
+        User user = this.getUserFromContext();
+        List<Layout> old = user.getLayout();
+        if(old != null){
+            old.addAll(layouts);
+        }else{
+            user.setLayout(layouts);
+        }
+        this.userRepository.save(user);
+    }
+
+    public void deleteLayout(String name) {
+        User user = this.getUserFromContext();
+        user.setLayout(user.getLayout().stream().filter(l -> !l.getName().equals(name)).collect(Collectors.toList()));
+        this.userRepository.save(user);
     }
 }
 

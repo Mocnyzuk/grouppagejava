@@ -17,5 +17,4 @@ public class DashboardResponse {
     private long participantId;
     private List<PostLight> posts;
 
-
 }

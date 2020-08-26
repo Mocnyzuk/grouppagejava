@@ -166,9 +166,10 @@ public class StartUp implements CommandLineRunner {
         group.setDescription("Grupa o "+ group.getCategory()+ " i okolicznych tematech.");
         group.setPrivate(false);
         group.setForm(false);
-        group.setCreatorId(0);
+        group.setCreatorId(1);
         group.setReaction(this.likes);
         group.setParticipantCount(1);
+        group.setInviteCode(UUID.randomUUID().toString());
         group.setImageId("zdjecia");
         return group;
     }
