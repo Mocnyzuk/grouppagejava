@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.UUID;
 
 @Data
@@ -16,14 +17,19 @@ import java.util.UUID;
 @AllArgsConstructor
 public class RequestNewGroup {
     @NotNull
+    @Size(min = 5)
     private String nickname;
     @NotNull
+    @Size(min = 2)
     private String name;
     @NotNull
+    @Size(min = 2)
     private String description;
     @NotNull
+    @Size(min = 2)
     private String category;
     @NotNull
+    @Size(min = 2)
     private String imagePath;
     @NotNull
     private boolean isAccept;

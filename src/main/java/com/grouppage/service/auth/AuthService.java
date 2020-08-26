@@ -86,6 +86,10 @@ public class AuthService {
         return ResponseEntity.noContent().headers(removeCookiesHeader).build();
     }
 
+    public void resetPassword(String email){
+
+    }
+
     /**
      * Class level logic
      */

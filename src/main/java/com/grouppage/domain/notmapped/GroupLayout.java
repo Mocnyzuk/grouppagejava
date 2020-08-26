@@ -12,7 +12,7 @@ import java.io.Serializable;
 public class GroupLayout implements Serializable {
     public static final long serialVersionUID = 42123L;
     private String name;
-    private int id;
+    private int i;
     private int x;
     private int y;
     private int w;

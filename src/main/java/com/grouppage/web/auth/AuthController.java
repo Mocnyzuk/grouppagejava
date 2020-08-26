@@ -52,4 +52,12 @@ public class AuthController {
         this.authService.activateAccount(uuid);
         return ResponseEntity.accepted().build();
     }
+
+    @GetMapping("/resetPassword")
+    public ResponseEntity<Void> resetPassword(
+            @RequestBody String email
+    ){
+        this.authService.resetPassword(email);
+        return ResponseEntity.accepted().build();
+    }
 }

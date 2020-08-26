@@ -4,10 +4,7 @@ import com.grouppage.domain.notmapped.Layout;
 import com.grouppage.service.auth.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,8 +24,24 @@ public class LayoutController {
         return ResponseEntity.ok(this.authService.getLayouts());
     }
 
+    @PostMapping("/api/layout")
+    public ResponseEntity<Void> saveLayout(
+            @RequestBody Layout layout
+    ){
+        //return this.authService.saveLayout(layout);
+        return null;
+    }
     @PostMapping("/api/layouts")
-    public ResponseEntity<Void> savevLayouts(){
+    public ResponseEntity<Void> saveLayouts(
+            @RequestBody List<Layout> layouts
+    ){
+        //return this.authService.saveLayout(layout);
+        return null;
+    }
+    @DeleteMapping("/api/layout/{name}")
+    public ResponseEntity<Void> deleteLayout(
+            @PathVariable(name = "name") String name
+    ){
         return null;
     }
 }

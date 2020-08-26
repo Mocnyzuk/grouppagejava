@@ -127,7 +127,7 @@ public class GroupService {
         Participant participant = this.participantRepository.findById(participantId).orElseThrow(
                 () -> new ParticipantNotFountException("Participan with id: "+ participantId + " doesnt exists!")
         );
-        if(this.checkOwnerOfParcitipant(participant))
+        if(this.checkOwnerOfParticipant(participant))
             throw new AccessDeniedException("You dont own this participant");
         Future<Post> future = this.groupLogicForAsync.upVote(participant, postId);
         return future.get();
@@ -138,7 +138,7 @@ public class GroupService {
         Participant participant = this.participantRepository.findById(participantId).orElseThrow(
                 () -> new ParticipantNotFountException("Participant with id: " + participantId + " doesnt exists!")
         );
-        if(this.checkOwnerOfParcitipant(participant))
+        if(this.checkOwnerOfParticipant(participant))
             throw new AccessDeniedException("You dont own this participant");
         Future<Post> future = this.groupLogicForAsync.removeVote(participant, postId);
         return future.get();
@@ -150,7 +150,7 @@ public class GroupService {
         return new PageImpl<>(list.subList(start, Math.toIntExact(end)), pageable, list.size());
     }
 
-     private boolean checkOwnerOfParcitipant(Participant participant) {
+     private boolean checkOwnerOfParticipant(Participant participant) {
         User user = this.authService.getUserFromContext();
         return participant.getUser().getId() != user.getId();
     }
