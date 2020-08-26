@@ -104,7 +104,7 @@ public class GroupService {
     public Page<GroupLight> findGroupBySearchPhrase(String phrase, Integer size, String page, String sort, boolean member) throws NumberFormatException{
         Pageable pageable = this.generatePageable(Integer.parseInt(page), size, sort);
         List<GroupLight> groups;
-        if(member){
+        if(false){
             List<Participant> participants = this.participantRepository.findAllByUserFetchGroup(this.authService.getUserFromContext());
             groups = participants.stream()
                     .map(Participant::getGroup)
