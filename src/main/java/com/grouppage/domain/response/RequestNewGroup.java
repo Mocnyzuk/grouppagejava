@@ -29,7 +29,6 @@ public class RequestNewGroup {
     @Size(min = 2)
     private String category;
     @NotNull
-    @Size(min = 2)
     private String imagePath;
     @NotNull
     private boolean isAccept;
@@ -59,7 +58,6 @@ public class RequestNewGroup {
         form.setForm(this.groupForm);
         return form;
     }
-
 
     public Participant toParticipant() {
         Participant participant = new Participant();
