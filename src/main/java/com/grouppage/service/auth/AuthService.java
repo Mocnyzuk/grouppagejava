@@ -163,5 +163,12 @@ public class AuthService {
         user.setLayout(user.getLayout().stream().filter(l -> !l.getName().equals(name)).collect(Collectors.toList()));
         this.userRepository.save(user);
     }
+
+    public void editLayout(Layout layout) {
+        User user = this.getUserFromContext();
+        user.setLayout(user.getLayout().stream().filter(l -> !l.getName().equals(layout.getName())).collect(Collectors.toList()));
+        user.getLayout().add(layout);
+        this.userRepository.save(user);
+    }
 }
 
