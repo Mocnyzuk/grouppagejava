@@ -1,16 +1,15 @@
 package com.grouppage.service;
 
-import com.grouppage.domain.entity.Group;
-import com.grouppage.domain.entity.Participant;
-import com.grouppage.domain.entity.Post;
-import com.grouppage.domain.entity.User;
+import com.grouppage.domain.entity.*;
 import com.grouppage.domain.logicForAsync.GroupLogicForAsync;
+import com.grouppage.domain.notmapped.GroupForm;
 import com.grouppage.domain.notmapped.GroupLight;
 import com.grouppage.domain.notmapped.HashTag;
 import com.grouppage.domain.notmapped.SocketMessage;
 import com.grouppage.domain.repository.GroupRepository;
 import com.grouppage.domain.repository.ParticipantRepository;
 import com.grouppage.domain.repository.PostRepository;
+import com.grouppage.domain.repository.SignUpFormRepository;
 import com.grouppage.domain.response.*;
 import com.grouppage.exception.GroupNotFoundException;
 import com.grouppage.exception.ParticipantNotFountException;
@@ -49,13 +48,14 @@ public class GroupService {
     private final PostRepository postRepository;
     private final ParticipantRepository participantRepository;
     private final GroupRepository groupRepository;
+    private final SignUpFormRepository signUpFormRepository;
 
     @Autowired
     public GroupService(GroupLogicForAsync groupLogicForAsync,
                         AuthService authService,
                         ChatService chatService, ExecService execService, PostRepository postRepository,
                         ParticipantRepository participantRepository,
-                        GroupRepository groupRepository) {
+                        GroupRepository groupRepository, SignUpFormRepository signUpFormRepository) {
         this.groupLogicForAsync = groupLogicForAsync;
         this.authService = authService;
         this.chatService = chatService;
@@ -63,6 +63,7 @@ public class GroupService {
         this.postRepository = postRepository;
         this.participantRepository = participantRepository;
         this.groupRepository = groupRepository;
+        this.signUpFormRepository = signUpFormRepository;
     }
 
     public Post handleNewPost(PostedPost postedPost) throws ExecutionException, InterruptedException {
@@ -222,11 +223,18 @@ public class GroupService {
                 this.authService.getUserFromContext());
     }
 
-    public GroupLight getGroupFromInviteCode(String id) {
+    public GroupForm getGroupFromInviteCode(String id) {
         Group group = this.groupRepository.findByInviteCode(id).orElseThrow(
                 () -> new GroupNotFoundException("Invitation is invalid!")
         );
-        return GroupLight.fromGroup(group);
+        GroupForm form = null;
+        if(group.isForm()){
+            Optional<SignUpForm> optional = this.signUpFormRepository.findByGroupId(group.getId());
+            if(optional.isPresent()){
+                form = optional.get().getForm();
+            }
+        }
+        return form;
     }
 
     public void handleNewParticipant(InviteParticipant inviteParticipant, String id) {

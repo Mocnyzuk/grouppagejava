@@ -1,5 +1,6 @@
 package com.grouppage.web.rest;
 
+import com.grouppage.domain.notmapped.GroupForm;
 import com.grouppage.domain.notmapped.GroupLight;
 import com.grouppage.domain.response.*;
 import com.grouppage.exception.WrongDataPostedException;
@@ -66,7 +67,7 @@ public class GroupController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     @GetMapping("/invite")
-    public ResponseEntity<GroupLight> checkIfCodeIsValid(
+    public ResponseEntity<GroupForm> checkIfCodeIsValid(
             @RequestParam(value = "id") String id
     ) {
         return ResponseEntity.ok(groupService.getGroupFromInviteCode(id));

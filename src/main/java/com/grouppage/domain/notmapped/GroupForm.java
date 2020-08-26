@@ -1,5 +1,6 @@
 package com.grouppage.domain.notmapped;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.grouppage.domain.converter.Pair;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,6 +18,7 @@ public class GroupForm {
     @NotNull
     private Map<String, String> form;
 
+    @JsonIgnore
     public Collection<Pair<String, String>> getPairs(){
        return form.entrySet().stream()
                 .map((q) -> new Pair<>(q.getKey(), q.getValue()))
