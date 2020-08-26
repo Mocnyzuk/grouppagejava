@@ -216,7 +216,6 @@ class GroupControllerIntegrationTest {
                                         "iamge",
                                         false,
                                         false,
-                                        true,
                                         new GroupForm(map),
                                         1
                                 )

@@ -7,6 +7,7 @@ import com.grouppage.domain.notmapped.GroupForm;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -34,9 +35,7 @@ public class RequestNewGroup {
     private boolean isAccept;
     @NotNull
     private boolean isPrivate;
-    @NotNull
-    private boolean isForm;
-    @NotNull
+    @Nullable
     private GroupForm groupForm;
     @NotNull
     private long reactionId;
@@ -50,7 +49,7 @@ public class RequestNewGroup {
         group.setPrivate(this.isPrivate);
         group.setAccept(this.isPrivate || this.isAccept);
         group.setInviteCode(UUID.randomUUID().toString());
-        group.setForm((groupForm != null));
+        group.setForm((this.groupForm != null));
         return group;
     }
     public SignUpForm toSignUpForm(){

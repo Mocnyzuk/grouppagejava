@@ -115,13 +115,15 @@ public class GroupLogicForAsync {
             group.setParticipantCount(1);
             group = this.groupRepository.save(group);
 
-            SignUpForm form = requestNewGroup.toSignUpForm();
-            form.setGroup(group);
             Participant participant = requestNewGroup.toParticipant();
             participant.setGroup(group);
             participant.setUser(user);
             participant.setEnabled(true);
-            this.signUpFormRepository.save(form);
+            if(group.isForm()) {
+                SignUpForm form = requestNewGroup.toSignUpForm();
+                form.setGroup(group);
+                this.signUpFormRepository.save(form);
+            }
             participant = this.participantRepository.save(participant);
             group.setCreatorId(participant.getId());
             return this.groupRepository.save(group);
