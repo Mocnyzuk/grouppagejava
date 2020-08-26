@@ -139,10 +139,10 @@ public class AuthService {
     public void saveLayout(Layout layout) {
         User user = this.getUserFromContext();
         List<Layout> layouts = user.getLayout();
-        if(layout != null){
-            layouts.add(layout);
-        }else{
+        if(layouts == null){
             user.setLayout(new ArrayList<Layout>(){{add(layout);}});
+        }else{
+            layouts.add(layout);
         }
         this.userRepository.save(user);
     }
