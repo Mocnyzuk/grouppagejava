@@ -133,14 +133,14 @@ public class AuthService {
     }
 
     public List<Layout> getLayouts() {
-        return this.getUserFromContext().getLayout();
+        return this.getUserFromContext().getLayouts();
     }
 
     public void saveLayout(Layout layout) {
         User user = this.getUserFromContext();
-        List<Layout> layouts = user.getLayout();
+        List<Layout> layouts = user.getLayouts();
         if(layouts == null){
-            user.setLayout(new ArrayList<Layout>(){{add(layout);}});
+            user.setLayouts(new ArrayList<Layout>(){{add(layout);}});
         }else{
             layouts.add(layout);
         }
@@ -149,25 +149,25 @@ public class AuthService {
 
     public void saveLayouts(List<Layout> layouts) {
         User user = this.getUserFromContext();
-        List<Layout> old = user.getLayout();
+        List<Layout> old = user.getLayouts();
         if(old != null){
             old.addAll(layouts);
         }else{
-            user.setLayout(layouts);
+            user.setLayouts(layouts);
         }
         this.userRepository.save(user);
     }
 
     public void deleteLayout(String name) {
         User user = this.getUserFromContext();
-        user.setLayout(user.getLayout().stream().filter(l -> !l.getName().equals(name)).collect(Collectors.toList()));
+        user.setLayouts(user.getLayouts().stream().filter(l -> !l.getName().equals(name)).collect(Collectors.toList()));
         this.userRepository.save(user);
     }
 
     public void editLayout(Layout layout) {
         User user = this.getUserFromContext();
-        user.setLayout(user.getLayout().stream().filter(l -> !l.getName().equals(layout.getName())).collect(Collectors.toList()));
-        user.getLayout().add(layout);
+        user.setLayouts(user.getLayouts().stream().filter(l -> !l.getName().equals(layout.getName())).collect(Collectors.toList()));
+        user.getLayouts().add(layout);
         this.userRepository.save(user);
     }
 }
