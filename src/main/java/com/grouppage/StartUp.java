@@ -193,7 +193,7 @@ public class StartUp implements CommandLineRunner {
         User jacek = this.generateBasicUser("jacek@jacek.pl");
         User adam = this.generateBasicUser("adam@adam.pl");
         User kasia = this.generateBasicUser("kasia@kasia.pl");
-        User admin =this.generateUserFromEmail("admin@admin.pl", true);
+        User admin = this.generateUserFromEmail("admin@admin.pl", true);
         List<User> user = Arrays.asList(fpmoles, jdoe, jacek, adam, kasia, admin);
         user.forEach(u -> u.setActivated(true));
         this.users = userRepository.saveAll(user);

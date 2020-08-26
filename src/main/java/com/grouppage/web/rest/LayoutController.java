@@ -41,7 +41,7 @@ public class LayoutController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
 
     }
-    @DeleteMapping("/api/layout/{name}")
+    @DeleteMapping("/{name}")
     public ResponseEntity<Void> deleteLayout(
             @PathVariable(name = "name") String name
     ){
