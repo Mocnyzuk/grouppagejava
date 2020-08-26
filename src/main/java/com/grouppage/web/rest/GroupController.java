@@ -1,10 +1,7 @@
 package com.grouppage.web.rest;
 
 import com.grouppage.domain.notmapped.GroupLight;
-import com.grouppage.domain.response.InviteParticipant;
-import com.grouppage.domain.response.PostResponse;
-import com.grouppage.domain.response.PostedPost;
-import com.grouppage.domain.response.RequestNewGroup;
+import com.grouppage.domain.response.*;
 import com.grouppage.exception.WrongDataPostedException;
 import com.grouppage.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +25,14 @@ public class GroupController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<GroupLight>> searchGroups(
+    public ResponseEntity<Page<GroupSearch>> searchGroups(
             @RequestParam(name = "search") String phrase,
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "20") Integer size,
             @RequestParam(value = "sort", required = false, defaultValue = "nosort") String sort,
             @RequestParam(value = "member", required = false, defaultValue = "false") Boolean member
     ){
-        Page<GroupLight> response = groupService.findGroupBySearchPhrase(phrase, size, page, sort, member);
+        Page<GroupSearch> response = groupService.findGroupBySearchPhrase(phrase, size, page, sort, member);
         return ResponseEntity.ok(response);
     }
 

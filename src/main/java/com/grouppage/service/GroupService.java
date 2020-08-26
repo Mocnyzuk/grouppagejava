@@ -101,22 +101,31 @@ public class GroupService {
 
 
 
-    public Page<GroupLight> findGroupBySearchPhrase(String phrase, Integer size, String page, String sort, boolean member) throws NumberFormatException{
+    public Page<GroupSearch> findGroupBySearchPhrase(String phrase, Integer size, String page, String sort, boolean member) throws NumberFormatException{
         Pageable pageable = this.generatePageable(Integer.parseInt(page), size, sort);
-        List<GroupLight> groups;
+        List<GroupSearch> groups;
         if(false){
-            List<Participant> participants = this.participantRepository.findAllByUserFetchGroup(this.authService.getUserFromContext());
-            groups = participants.stream()
-                    .map(Participant::getGroup)
-                    .filter(Group.distinctByKeys(Group::getId))
-                    .filter(g -> g.getDescription().toUpperCase().contains(phrase.toUpperCase()) ||
-                            g.getName().toUpperCase().contains(phrase.toUpperCase()) ||
-                            g.getCategory().toUpperCase().contains(phrase.toUpperCase()))
-                    .map(GroupLight::fromGroup)
-                    .collect(Collectors.toList());
+//            List<Participant> participants = this.participantRepository.findAllByUserFetchGroup(this.authService.getUserFromContext());
+//            groups = participants.stream()
+//                    .map(Participant::getGroup)
+//                    .filter(Group.distinctByKeys(Group::getId))
+//                    .filter(g -> g.getDescription().toUpperCase().contains(phrase.toUpperCase()) ||
+//                            g.getName().toUpperCase().contains(phrase.toUpperCase()) ||
+//                            g.getCategory().toUpperCase().contains(phrase.toUpperCase()))
+//                    .map(GroupLight::fromGroup)
+//                    .collect(Collectors.toList());
         }else {
-            groups = this.groupRepository.proceedGroupSearch(phrase).stream()
-                    .map(GroupLight::fromGroup).collect(Collectors.toList());
+
+            List<Group> groupy = this.groupRepository.proceedGroupSearch(phrase);
+            List<Group> groupFromParticipants = this.participantRepository.findAllByUserFetchGroup(this.authService.getUserFromContext()).stream()
+                    .map(Participant::getGroup).collect(Collectors.toList());
+            groups = groupy.stream().map(g -> {
+                if(groupFromParticipants.contains(g)){
+                    return GroupSearch.fromGroup(g, true);
+                }else{
+                    return GroupSearch.fromGroup(g, false);
+                }
+            }).collect(Collectors.toList());
         }
         return this.generatePage(groups, pageable);
     }
