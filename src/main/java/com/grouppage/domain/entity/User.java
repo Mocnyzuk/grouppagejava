@@ -62,5 +62,5 @@ public class User extends AbstractEntityDate{
     @Convert(converter = LayoutConverter.class)
     @Column(length = 1000000)
     @Nullable
-    private List<Layout> layout;
+    private List<Layout> layouts;
 }
