@@ -12,6 +12,7 @@ import com.grouppage.exception.ParticipantNotFountException;
 import com.grouppage.exception.PostNotFoundException;
 import com.grouppage.exception.ReactionNotFoundException;
 import com.grouppage.service.ExecService;
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -121,8 +122,10 @@ public class GroupLogicForAsync {
             participant.setEnabled(true);
             if(group.isForm()) {
                 SignUpForm form = requestNewGroup.toSignUpForm();
+                form.setNickname("example");
                 form.setGroup(group);
-                this.signUpFormRepository.save(form);
+                System.out.println(form);
+                System.out.println(this.signUpFormRepository.save(form));
             }
             participant = this.participantRepository.save(participant);
             group.setCreatorId(participant.getId());

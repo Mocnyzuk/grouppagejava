@@ -61,6 +61,7 @@ public class GroupController {
     public ResponseEntity<Void> createNewGroup(
             @RequestBody @Valid RequestNewGroup requestNewGroup
     ){
+        System.out.println(requestNewGroup);
         this.groupService.saveNewGroup(requestNewGroup);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

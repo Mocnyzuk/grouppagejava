@@ -38,19 +38,11 @@ public class GroupFormConverter implements AttributeConverter<GroupForm, String>
         Map<String, String> map = new HashMap<>();
         Arrays.stream(s.split(";")).forEach(q -> {
             String[] arr = q.split("=");
-            if(arr.length == 2){
-                Pair<String, String> pair = new Pair<>();
-                Arrays.stream(arr).forEach(w -> {
-                    if (pair.getKey() == null) {
-                        pair.setKey(w);
-                    } else {
-                        pair.setValue(w);
-                    }
-                });
-                map.put(pair.getKey(), pair.getValue());
-            }else {
-                throw new GroupFormException("Something went wrong when parsing");
-            }
+            Pair<String, String> pair = new Pair<>();
+            pair.setKey(arr[0]);
+            pair.setValue(arr.length == 2? arr[1]: "");
+            map.put(pair.getKey(), pair.getValue());
+
         });
         return new GroupForm(map);
     }
