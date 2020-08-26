@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GroupForm {
+    @NotNull
     private Map<String, String> form;
 
     public Collection<Pair<String, String>> getPairs(){

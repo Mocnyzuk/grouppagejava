@@ -14,6 +14,7 @@ import java.util.List;
 public class DashboardResponse {
 
     private GroupLight group;
+    private long participantId;
     private List<PostLight> posts;
 
 

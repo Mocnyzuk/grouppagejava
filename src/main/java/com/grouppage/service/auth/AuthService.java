@@ -133,5 +133,9 @@ public class AuthService {
     public List<Layout> getLayouts() {
         return this.getUserFromContext().getLayout();
     }
+
+    public void saveLayout(Layout layout) {
+        //User user =
+    }
 }
 

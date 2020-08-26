@@ -101,6 +101,9 @@ public class GroupLogicForAsync {
                                 .collect(Collectors.toList())
                 );
                 response.setGroup(GroupLight.fromGroup(g));
+                response.setParticipantId(participants.stream().filter(p -> p.getGroup().getId() == g.getId()).findFirst().orElseThrow(
+                        () -> new ParticipantNotFountException("Participant not gffound")
+                ).getId());
                 list.add(response);
             });
             return list;

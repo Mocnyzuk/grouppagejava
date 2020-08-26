@@ -24,14 +24,14 @@ public class LayoutController {
         return ResponseEntity.ok(this.authService.getLayouts());
     }
 
-    @PostMapping("/api/layout")
+    @PostMapping("/single")
     public ResponseEntity<Void> saveLayout(
             @RequestBody Layout layout
     ){
-        //return this.authService.saveLayout(layout);
+        this.authService.saveLayout(layout);
         return null;
     }
-    @PostMapping("/api/layouts")
+    @PostMapping("/multi")
     public ResponseEntity<Void> saveLayouts(
             @RequestBody List<Layout> layouts
     ){
