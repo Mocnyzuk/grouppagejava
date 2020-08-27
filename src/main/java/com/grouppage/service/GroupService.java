@@ -2,10 +2,7 @@ package com.grouppage.service;
 
 import com.grouppage.domain.entity.*;
 import com.grouppage.domain.logicForAsync.GroupLogicForAsync;
-import com.grouppage.domain.notmapped.GroupForm;
-import com.grouppage.domain.notmapped.GroupLight;
-import com.grouppage.domain.notmapped.HashTag;
-import com.grouppage.domain.notmapped.SocketMessage;
+import com.grouppage.domain.notmapped.*;
 import com.grouppage.domain.repository.GroupRepository;
 import com.grouppage.domain.repository.ParticipantRepository;
 import com.grouppage.domain.repository.PostRepository;
@@ -88,7 +85,7 @@ public class GroupService {
 //                        (v) -> this.postRepository.save(post)
 //                );
         this.chatService.processNewGroupPost(
-                new SocketMessage(postedPost.getParticipantId(), postedPost.getContent(), SocketMessage.Type.GROUP),
+                new SocketMessage(postedPost.getParticipantId(), postedPost.getContent(), Type.GROUP),
                 postedPost.getGroupId());
     }
 
@@ -251,18 +248,24 @@ public class GroupService {
                     message.setParticipantId(0);
                     String content;
                     if(t != null){
-                        message.setType(SocketMessage.Type.ERROR);
+                        message.setType(Type.ERROR);
                         content = "Error occured -> ".concat(t.getMessage());
                     }else{
-                        message.setType(SocketMessage.Type.NOTIFICATION);
+                        message.setType(Type.NOTIFICATION);
                         content = "Success";
                     }
                     message.setContent(content);
                     this.chatService.sendMessageOrPost(Collections.singletonList(user.getId()),
-                            message);
+                            new SocketOutMessage(message.getParticipantId(), p.getGroup().getId(),
+                                    message.getContent(), message.getType()));
                     return null;
                 }
         );
 
+    }
+
+    public List<ParticipantLight> getAllParticipants(long groupId) {
+        return this.participantRepository.findAllByGroupId(groupId).stream()
+                .map(ParticipantLight::fromParticipant).collect(Collectors.toList());
     }
 }

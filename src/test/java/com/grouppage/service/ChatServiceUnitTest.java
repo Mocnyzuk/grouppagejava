@@ -4,6 +4,7 @@ import com.grouppage.domain.entity.Participant;
 import com.grouppage.domain.entity.User;
 import com.grouppage.domain.entity.chat.Conversation;
 import com.grouppage.domain.notmapped.SocketMessage;
+import com.grouppage.domain.notmapped.Type;
 import com.grouppage.domain.repository.GroupRepository;
 import com.grouppage.domain.repository.ParticipantRepository;
 import com.grouppage.domain.repository.PostRepository;
@@ -72,7 +73,7 @@ class ChatServiceUnitTest {
         String receiver = "12";
 
         SocketMessage socketMessage =
-                new SocketMessage(1, "lalala", SocketMessage.Type.CHAT);
+                new SocketMessage(1, "lalala", Type.CHAT);
 
         when(participantRepository.findById(participant.getId())).thenReturn(Optional.of(participant));
         when(participantRepository.findById(Long.parseLong(receiver))).thenReturn(Optional.of(participant));

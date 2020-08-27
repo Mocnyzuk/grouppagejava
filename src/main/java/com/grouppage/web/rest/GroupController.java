@@ -2,6 +2,7 @@ package com.grouppage.web.rest;
 
 import com.grouppage.domain.notmapped.GroupForm;
 import com.grouppage.domain.notmapped.GroupLight;
+import com.grouppage.domain.notmapped.ParticipantLight;
 import com.grouppage.domain.response.*;
 import com.grouppage.exception.WrongDataPostedException;
 import com.grouppage.service.GroupService;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -47,6 +49,12 @@ public class GroupController {
     ){
         Page<PostResponse> response = groupService.getPostForGroupId(groupId, page, size, sort);
         return ResponseEntity.ok(response);
+    }
+    @GetMapping("/{groupId}/participants")
+    public ResponseEntity<List<ParticipantLight>> getAllParticipants(
+            @PathVariable(name = "groupId") long groupId
+    ){
+        return ResponseEntity.ok(this.groupService.getAllParticipants(groupId));
     }
 
     @PostMapping

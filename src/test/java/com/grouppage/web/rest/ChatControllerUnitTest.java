@@ -2,6 +2,7 @@ package com.grouppage.web.rest;
 
 import com.grouppage.domain.entity.Participant;
 import com.grouppage.domain.notmapped.SocketMessage;
+import com.grouppage.domain.notmapped.Type;
 import com.grouppage.domain.response.AddParticipantRequest;
 import com.grouppage.exception.ParticipantNotFountException;
 import com.grouppage.service.ChatService;
@@ -37,7 +38,7 @@ class ChatControllerUnitTest {
     @Test
     void shouldReturnNullWithStatusCreatedCreateConversation() throws ExecutionException, InterruptedException {
         Object response = this.chatController.saveFirstPrivMessage(
-                new SocketMessage(1, "lala", SocketMessage.Type.CHAT),
+                new SocketMessage(1, "lala", Type.CHAT),
                 "15"
         );
         assertNotNull(response);

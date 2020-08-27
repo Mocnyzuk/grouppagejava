@@ -124,7 +124,7 @@ class SocketControllerIntegrationTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("receiver", "9")
                             .content(
-                                    MAPPER.writeValueAsString(new SocketMessage(4, "Pierwsza wiadomosc", SocketMessage.Type.CHAT))
+                                    MAPPER.writeValueAsString(new SocketMessage(4, "Pierwsza wiadomosc", com.grouppage.domain.notmapped.Type.CHAT))
                             )
                     )
                             .andExpect(status().isCreated())
@@ -175,7 +175,7 @@ class SocketControllerIntegrationTest {
                 });
                 try {
                     session.send("/app/conversation/1/sendmessage", new SocketMessage(
-                            59, "drugi test", SocketMessage.Type.CHAT
+                            59, "drugi test", com.grouppage.domain.notmapped.Type.CHAT
                     ));
                 } catch (Exception e) {
                     failure.set(e);
