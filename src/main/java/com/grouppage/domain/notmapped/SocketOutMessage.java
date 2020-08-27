@@ -7,11 +7,13 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotNull;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class SocketMessage {
+@AllArgsConstructor
+public class SocketOutMessage {
     @NotNull
     private long participantId;
+    @NotNull
+    private long id;
     @NotNull
     private String content;
     @NotNull

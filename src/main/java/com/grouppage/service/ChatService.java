@@ -8,6 +8,8 @@ import com.grouppage.domain.entity.chat.Conversation;
 import com.grouppage.domain.entity.chat.PrivateMessage;
 import com.grouppage.domain.notmapped.HashTag;
 import com.grouppage.domain.notmapped.SocketMessage;
+import com.grouppage.domain.notmapped.SocketOutMessage;
+import com.grouppage.domain.notmapped.Type;
 import com.grouppage.domain.repository.GroupRepository;
 import com.grouppage.domain.repository.ParticipantRepository;
 import com.grouppage.domain.repository.PostRepository;
@@ -87,8 +89,8 @@ public class ChatService {
     }
 
     public void processNewPrivateMessage(SocketMessage socketMessage,
-                                        long conversationId) throws WrongDataPostedException, ExecutionException, InterruptedException, AccessDeniedException {
-        if (!socketMessage.getType().equals(SocketMessage.Type.CHAT)){
+                                        long conversationId) throws WrongDataPostedException, AccessDeniedException {
+        if (!socketMessage.getType().equals(Type.CHAT)){
             throw new WrongDataPostedException("Group message posted to private handler!");
         }
         if(this.checkOwnerOfParcitipant(socketMessage.getParticipantId()))
@@ -114,13 +116,13 @@ public class ChatService {
             }
         );
         List<Long> userIds = fromConv.stream().map(p -> p.getUser().getId()).distinct().collect(Collectors.toList());
-        this.sendMessageOrPost(userIds, socketMessage);
+        this.sendMessageOrPost(userIds, new SocketOutMessage(socketMessage.getParticipantId(), conversationId, socketMessage.getContent(), socketMessage.getType()));
         execService.executeCallable(() -> privateMessageRepository.save(messageFuture.get()));
 
     }
     public void processNewGroupPost(SocketMessage socketMessage,
                                     long groupId) throws ExecutionException, InterruptedException, WrongDataPostedException, AccessDeniedException {
-        if(socketMessage.getType() != SocketMessage.Type.GROUP){
+        if(socketMessage.getType() != Type.GROUP){
             throw new WrongDataPostedException("Message is not a post for group!");
         }
         if(this.checkOwnerOfParcitipant(socketMessage.getParticipantId()))
@@ -149,7 +151,8 @@ public class ChatService {
             throw new AccessDeniedException("You have no permission do send posts here!");
         List<Long> userIds = participantFuture.get().stream().map(p -> p.getUser().getId()).distinct().collect(Collectors.toList());
 
-        this.sendMessageOrPost(userIds, socketMessage);
+        this.sendMessageOrPost(userIds,
+                new SocketOutMessage(socketMessage.getParticipantId(), groupId, socketMessage.getContent(), socketMessage.getType()));
         Post post = messageFuture.get();
         execService.executeCallable(() -> postRepository.save(post));
     }
@@ -174,7 +177,7 @@ public class ChatService {
             return hashtags;
         });
     }
-    public void sendMessageOrPost(List<Long> userIds, SocketMessage message){
+    public void sendMessageOrPost(List<Long> userIds, SocketOutMessage message){
         for (Long userId : userIds) {
             execService.executeRunnable(
                     () -> this.simpMessagingTemplate.convertAndSend("/topic/" + userId, message)

@@ -29,8 +29,8 @@ function sendMessage(event) {
             content : document.querySelector('#chatMessage').value,
             type : 'CHAT'
         };
-        stompClient.send("/app/conversation/22/sendmessage", {}, JSON
-            .stringify(chatMessage));
+        stompClient.send("/app/conversation/22/sendmessage", {},
+            JSON.stringify(chatMessage));
         document.querySelector('#chatMessage').value = '';
     }
     event.preventDefault();
