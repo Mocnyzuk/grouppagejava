@@ -14,6 +14,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -62,5 +63,5 @@ public class User extends AbstractEntityDate{
     @Convert(converter = LayoutConverter.class)
     @Column(length = 1000000)
     @Nullable
-    private List<Layout> layouts;
+    private List<Layout> layouts = new ArrayList<>();
 }

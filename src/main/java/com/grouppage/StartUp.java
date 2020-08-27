@@ -122,22 +122,21 @@ public class StartUp implements CommandLineRunner {
      * PARTICIPANTS THINGS
      */
     private void loadParticipantsToGroups() {
-        List<String> nicknames = Arrays.asList("lol1lol1", "andrzej1", "mnarekkk", "lewislaw", "barekkk", "jurekkk", "anmcymon", "jurczyson",
-                "1lol1lol1", "1andrzej1", "1mnarekkk", "1lewislaw", "1barekkk", "1jurekkk", "1anmcymon", "1jurczyson");
-        for (int i = 1; i < nicknames.size(); i++) {
+        List<String> nicknames = Arrays.asList("andrzej1", "mnarekkk", "lewislaw", "barekkk", "jurekkk", "anmcymon");
+        for (int i = 0; i < nicknames.size(); i++) {
             for (Group group : this.groups) {
-                Participant part = this.generateBasicParticipantToRandomGroup(nicknames.get(i), group);
+                Participant part = this.generateBasicParticipantToRandomGroup(nicknames.get(i), group, i);
                 this.participants.add(part);
             }
         }
         this.participants = participantRepository.saveAll(this.participants);
     }
 
-    private Participant generateBasicParticipantToRandomGroup(String nickaname, Group group) {
+    private Participant generateBasicParticipantToRandomGroup(String nickaname, Group group, int index) {
         Participant participant = new Participant();
         participant.setNickname(nickaname);
         participant.setEnabled(true);
-        participant.setUser(this.users.get(rand.nextInt(users.size()-1)));
+        participant.setUser(this.users.get(index));
         participant.setGroup(group);
         participant.getGroup().setParticipantCount(
                 participant.getGroup().getParticipantCount()+1

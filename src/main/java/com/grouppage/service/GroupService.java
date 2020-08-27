@@ -43,7 +43,6 @@ public class GroupService {
     private final ExecService execService;
 
     private final String HASH = "#";
-    private final char HASH_CHAR = '#';
 
     private final PostRepository postRepository;
     private final ParticipantRepository participantRepository;
@@ -66,29 +65,31 @@ public class GroupService {
         this.signUpFormRepository = signUpFormRepository;
     }
 
-    public Post handleNewPost(PostedPost postedPost) throws ExecutionException, InterruptedException {
-        Future<List<HashTag>> hashTags = this.getHashTagsFromPost(postedPost.getContent());
-        Post post = new Post();
-        post.setContent(postedPost.getContent());
-        post.setReactionCount(0);
-        CompletableFuture<Void> futureGroup = CompletableFuture.supplyAsync(
-                () -> this.groupRepository.findById(postedPost.getGroupId()).orElseThrow(
-                        () -> new GroupNotFoundException("Group id is wrong")
-                ),
-                execService.getExecutor()
-        ).thenAccept(post::setGroup);
-        CompletableFuture<Void> futureParticipant = CompletableFuture.supplyAsync(
-                () -> this.participantRepository.findById(postedPost.getParticipantId()).orElseThrow(
-                        () -> new ParticipantNotFountException("Given participant doesnt exists")
-                ),
-                execService.getExecutor()
-        ).thenAccept(post::setAuthor);
-        post.setHashTags(hashTags.get());
-        CompletableFuture.allOf(futureGroup, futureParticipant)
-                .thenAccept(
-                        (v) -> this.postRepository.save(post)
-                );
-        return post;
+    public void handleNewPost(PostedPost postedPost) throws ExecutionException, InterruptedException {
+//        Future<List<HashTag>> hashTags = this.getHashTagsFromPost(postedPost.getContent());
+//        Post post = new Post();
+//        post.setContent(postedPost.getContent());
+//        post.setReactionCount(0);
+//        CompletableFuture<Void> futureGroup = CompletableFuture.supplyAsync(
+//                () -> this.groupRepository.findById(postedPost.getGroupId()).orElseThrow(
+//                        () -> new GroupNotFoundException("Group id is wrong")
+//                ),
+//                execService.getExecutor()
+//        ).thenAccept(post::setGroup);
+//        CompletableFuture<Void> futureParticipant = CompletableFuture.supplyAsync(
+//                () -> this.participantRepository.findById(postedPost.getParticipantId()).orElseThrow(
+//                        () -> new ParticipantNotFountException("Given participant doesnt exists")
+//                ),
+//                execService.getExecutor()
+//        ).thenAccept(post::setAuthor);
+//        post.setHashTags(hashTags.get());
+//        CompletableFuture.allOf(futureGroup, futureParticipant)
+//                .thenAccept(
+//                        (v) -> this.postRepository.save(post)
+//                );
+        this.chatService.processNewGroupPost(
+                new SocketMessage(postedPost.getParticipantId(), postedPost.getContent(), SocketMessage.Type.GROUP),
+                postedPost.getGroupId());
     }
 
     public Page<PostResponse> getPostForGroupId(long groupId, Integer page, Integer size, String sort)throws GroupNotFoundException, AccessDeniedException {

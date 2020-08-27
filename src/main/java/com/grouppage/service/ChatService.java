@@ -164,12 +164,10 @@ public class ChatService {
                 int hashIndex = content[0].indexOf(HASH);
                 content[0] = content[0].substring(hashIndex);
                 int index = 0;
-
                 while((content[0].charAt(index) != ' ') && index < 4){
                     index++;
                 }
                 if(index == 4){
-
                     hashtags.add(new HashTag(content[0].substring(0, content[0].indexOf(' '))));
                 }else{
                     content[0] = content[0].substring(index);

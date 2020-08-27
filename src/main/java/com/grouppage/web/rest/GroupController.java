@@ -52,9 +52,10 @@ public class GroupController {
     public ResponseEntity<Void> handleNewPostInGroup (
             @RequestBody @Valid PostedPost post
     ) throws WrongDataPostedException, ExecutionException, InterruptedException {
-        if((post == null) || (groupService.handleNewPost(post) == null)){
+        if(post == null){
             throw new WrongDataPostedException("Posted Data doesnt work with our parser");
         }
+        this.groupService.handleNewPost(post);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

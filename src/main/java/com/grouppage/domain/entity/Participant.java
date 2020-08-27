@@ -13,7 +13,9 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
-@Table(uniqueConstraints={@UniqueConstraint(columnNames = {"nickname" , "group_id", "user_id"})})
+@Table(uniqueConstraints={
+        @UniqueConstraint(columnNames = { "group_id", "user_id"}),
+        @UniqueConstraint(columnNames = {"nickname", "group_id"})})
 @AllArgsConstructor
 @NoArgsConstructor
 public class Participant extends AbstractEntityDate{
@@ -25,7 +27,6 @@ public class Participant extends AbstractEntityDate{
     private String nickname;
 
     @ManyToMany(targetEntity = Post.class, fetch = FetchType.LAZY)
-    //@JsonIgnoreProperties("author")
     private List<Post> likedPosts = new ArrayList<>();
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
