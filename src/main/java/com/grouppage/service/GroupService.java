@@ -132,7 +132,7 @@ public class GroupService {
 
 
     public Post upVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException, ExecutionException, InterruptedException {
-        Participant participant = this.participantRepository.findById(participantId).orElseThrow(
+        Participant participant = this.participantRepository.findByIdFetchUser(participantId).orElseThrow(
                 () -> new ParticipantNotFountException("Participan with id: "+ participantId + " doesnt exists!")
         );
         if(this.checkOwnerOfParticipant(participant))
@@ -143,7 +143,7 @@ public class GroupService {
     }
 
     public Post downVote(long participantId, long postId) throws PostNotFoundException, AccessDeniedException, ParticipantNotFountException, ExecutionException, InterruptedException {
-        Participant participant = this.participantRepository.findById(participantId).orElseThrow(
+        Participant participant = this.participantRepository.findByIdFetchUser(participantId).orElseThrow(
                 () -> new ParticipantNotFountException("Participant with id: " + participantId + " doesnt exists!")
         );
         if(this.checkOwnerOfParticipant(participant))

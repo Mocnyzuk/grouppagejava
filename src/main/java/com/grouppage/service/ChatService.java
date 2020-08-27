@@ -71,17 +71,19 @@ public class ChatService {
     }
 
 
-    public void handleNewChat(SocketMessage socketMessage, String receiver) throws WrongDataPostedException, ExecutionException, InterruptedException {
+    public void handleNewChat(SocketMessage socketMessage, String receiver) throws WrongDataPostedException, ExecutionException, InterruptedException, AccessDeniedException {
         if(!receiver.isEmpty() && null == socketMessage){
             throw new WrongDataPostedException("Posted data is invalid!");
         }
         Conversation conversation = new Conversation();
-        Future<Participant> first = execService.executeCallable(() -> participantRepository.findById(socketMessage.getParticipantId())
+        Future<Participant> first = execService.executeCallable(() -> participantRepository.findByIdFetchUser(socketMessage.getParticipantId())
             .orElseThrow(() -> new WrongDataPostedException("Posted data is invalid!")));
-        Future<Participant> second = execService.executeCallable(() -> participantRepository.findById(Long.parseLong(receiver))
+        Future<Participant> second = execService.executeCallable(() -> participantRepository.findByIdFetchUser(Long.parseLong(receiver))
             .orElseThrow(() -> new WrongDataPostedException("Posted data is invalid!")));
         List<Participant> partis = Arrays.asList(first.get(), second.get());
-
+        if(this.checkOwnerOfParcitipant(socketMessage.getParticipantId())){
+            throw new AccessDeniedException("This participant is not yours");
+        }
         conversation.setParticipants(partis);
         Conversation conv = conversationRepository.save(conversation);
         System.out.println("CONVERSATION ID: " + conv.getId() );
@@ -192,7 +194,7 @@ public class ChatService {
         }
     }
     private boolean checkOwnerOfParcitipant(long participantId) {
-        Participant participant = this.participantRepository.findById(participantId).orElseThrow(
+        Participant participant = this.participantRepository.findByIdFetchUser(participantId).orElseThrow(
                 () -> new ParticipantNotFountException("Participant with id: " + participantId + " doesnt exists!")
         );
         User user = this.authService.getUserFromContext();
