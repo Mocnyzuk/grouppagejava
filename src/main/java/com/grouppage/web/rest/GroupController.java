@@ -76,9 +76,9 @@ public class GroupController {
     @PostMapping("/invite/participant")
     public ResponseEntity<Void> inviteCodeAccess(
             @RequestParam(value = "id") String id,
-            @RequestBody @Valid InviteParticipant participant
+            @RequestBody @Valid GroupForm groupForm
     ) {
-        this.groupService.handleNewParticipant(participant, id);
+        this.groupService.handleNewParticipant(groupForm, id);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

@@ -16,20 +16,20 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class InviteParticipant {
     @NotNull
-    private String nickname;
-    @Nullable
     private GroupForm groupForm;
 
     public Participant getParticipant(){
         Participant participant = new Participant();
-        participant.setNickname(this.nickname);
+        participant.setNickname(this.groupForm.getForm().get("nickname"));
         participant.setEnabled(true);
         return participant;
     }
     public SignUpForm getSignUpForm(){
+        String nickname = this.groupForm.getForm().get("nickname");
+        this.groupForm.getForm().remove("nickname");
         SignUpForm form = new SignUpForm();
+        form.setNickname(nickname);
         form.setForm(this.groupForm);
-        form.setNickname(this.nickname);
         return form;
     }
 }

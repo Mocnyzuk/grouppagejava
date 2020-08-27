@@ -113,7 +113,6 @@ public class ChatService {
             return message;
             }
         );
-
         List<Long> userIds = fromConv.stream().map(p -> p.getUser().getId()).distinct().collect(Collectors.toList());
         this.sendMessageOrPost(userIds, socketMessage);
         execService.executeCallable(() -> privateMessageRepository.save(messageFuture.get()));
@@ -143,7 +142,6 @@ public class ChatService {
                     message.setGroup(groupFuture.get());
                     message.setReactionCount(0);
                     message.setHashTags(hashTags.get());
-
                     return message;
                 }
         );

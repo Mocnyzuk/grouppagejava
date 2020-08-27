@@ -233,15 +233,18 @@ public class GroupService {
             Optional<SignUpForm> optional = this.signUpFormRepository.findByGroupId(group.getId());
             if(optional.isPresent()){
                 form = optional.get().getForm();
+                form.getForm().put("nickname", "");
             }
+        }else{
+            form = new GroupForm(new HashMap<String, String>(){{put("nickname", "");}});
         }
         return form;
     }
 
-    public void handleNewParticipant(InviteParticipant inviteParticipant, String id) {
+    public void handleNewParticipant(GroupForm groupForm, String id) {
         User user = this.authService.getUserFromContext();
         this.groupLogicForAsync.
-                handleNewParticipant(inviteParticipant, id,
+                handleNewParticipant(groupForm, id,
                         user).handleAsync(
                 (p, t) -> {
                     SocketMessage message = new SocketMessage();

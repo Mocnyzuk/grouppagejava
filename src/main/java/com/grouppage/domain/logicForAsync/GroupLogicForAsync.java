@@ -1,6 +1,7 @@
 package com.grouppage.domain.logicForAsync;
 
 import com.grouppage.domain.entity.*;
+import com.grouppage.domain.notmapped.GroupForm;
 import com.grouppage.domain.notmapped.GroupLight;
 import com.grouppage.domain.notmapped.PostLight;
 import com.grouppage.domain.repository.*;
@@ -136,15 +137,15 @@ public class GroupLogicForAsync {
         });
     }
 
-    public CompletableFuture<Participant> handleNewParticipant(InviteParticipant inviteParticipant, String id, User user) {
+    public CompletableFuture<Participant> handleNewParticipant(GroupForm groupForm, String id, User user) {
         return CompletableFuture.supplyAsync(
                 () -> {
-                    Participant participant = inviteParticipant.getParticipant();
+                    Participant participant = groupForm.getParticipant();
                     Group group = this.groupRepository.findByInviteCode(id).orElseThrow(
                             () -> new GroupNotFoundException("Group with inviteCode "+ id+ " doesnt exists")
                     );
-                    if(inviteParticipant.getGroupForm() != null) {
-                        SignUpForm form = inviteParticipant.getSignUpForm();
+                    if(groupForm != null) {
+                        SignUpForm form = groupForm.getSignUpForm();
                         form.setGroup(group);
                         this.signUpFormRepository.save(form);
                     }

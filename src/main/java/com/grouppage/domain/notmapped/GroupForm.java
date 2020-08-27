@@ -2,6 +2,8 @@ package com.grouppage.domain.notmapped;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.grouppage.domain.converter.Pair;
+import com.grouppage.domain.entity.Participant;
+import com.grouppage.domain.entity.SignUpForm;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,4 +27,21 @@ public class GroupForm {
                 .collect(Collectors.toList());
     }
 
+    @JsonIgnore
+    public Participant getParticipant() {
+        Participant participant = new Participant();
+        participant.setNickname(this.form.get("nickname"));
+        participant.setEnabled(true);
+        return participant;
+    }
+
+    @JsonIgnore
+    public SignUpForm getSignUpForm() {
+        String nickname = this.form.get("nickname");
+        this.form.remove("nickname");
+        SignUpForm form = new SignUpForm();
+        form.setNickname(nickname);
+        form.setForm(this);
+        return form;
+    }
 }
