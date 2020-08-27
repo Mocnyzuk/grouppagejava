@@ -86,7 +86,7 @@ public class ChatService {
         Conversation conv = conversationRepository.save(conversation);
         System.out.println("CONVERSATION ID: " + conv.getId() );
         if(socketMessage.getType() == Type.NEW){
-            this.sendMessageOrPost(Arrays.asList(second.get().getUser().getId()),
+            this.sendMessageOrPost(Arrays.asList(second.get().getUser().getId(), first.get().getUser().getId()),
                     new SocketOutMessage(socketMessage.getParticipantId(), conv.getId(), "", socketMessage.getType()));
         }else{
             this.processNewPrivateMessage(socketMessage, conv.getId());

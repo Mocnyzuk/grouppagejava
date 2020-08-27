@@ -18,5 +18,4 @@ public class SocketOutMessage {
     private String content;
     @NotNull
     private Type type;
-
 }
