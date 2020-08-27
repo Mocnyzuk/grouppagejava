@@ -18,10 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -137,14 +134,15 @@ public class GroupLogicForAsync {
         });
     }
 
-    public CompletableFuture<Participant> handleNewParticipant(GroupForm groupForm, String id, User user) {
+    public CompletableFuture<Participant> handleNewParticipant(Map<String, String> map, String id, User user) {
         return CompletableFuture.supplyAsync(
                 () -> {
+                    GroupForm groupForm = new GroupForm(map);
                     Participant participant = groupForm.getParticipant();
                     Group group = this.groupRepository.findByInviteCode(id).orElseThrow(
                             () -> new GroupNotFoundException("Group with inviteCode "+ id+ " doesnt exists")
                     );
-                    if(groupForm != null) {
+                    if(group.isForm()) {
                         SignUpForm form = groupForm.getSignUpForm();
                         form.setGroup(group);
                         this.signUpFormRepository.save(form);

@@ -241,7 +241,7 @@ public class GroupService {
         return form;
     }
 
-    public void handleNewParticipant(GroupForm groupForm, String id) {
+    public void handleNewParticipant(Map<String, String> groupForm, String id) {
         User user = this.authService.getUserFromContext();
         this.groupLogicForAsync.
                 handleNewParticipant(groupForm, id,

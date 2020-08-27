@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @RestController
@@ -76,7 +77,7 @@ public class GroupController {
     @PostMapping("/invite/participant")
     public ResponseEntity<Void> inviteCodeAccess(
             @RequestParam(value = "id") String id,
-            @RequestBody @Valid GroupForm groupForm
+            @RequestBody @Valid Map<String, String> groupForm
     ) {
         this.groupService.handleNewParticipant(groupForm, id);
         return ResponseEntity.status(HttpStatus.CREATED).build();
