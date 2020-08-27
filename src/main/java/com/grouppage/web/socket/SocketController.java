@@ -34,6 +34,13 @@ public class SocketController {
         this.chatService.processNewPrivateMessage(socketMessage, Long.parseLong(id));
     }
 
+    @MessageMapping("/conversation/new/{participantId}")
+    public void newConversation(
+            @Payload SocketMessage socketMessage,
+            @DestinationVariable String participantId
+    ) throws ExecutionException, InterruptedException {
+        this.chatService.handleNewChat(socketMessage, participantId);
+    }
     @MessageMapping("/group/{id}/sendpost")
     public void newPost(
             @Payload SocketMessage socketMessage,

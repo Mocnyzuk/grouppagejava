@@ -30,7 +30,6 @@ public class ChatController {
         chatService.handleNewChat(socketMessage, receiver);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-
     @PostMapping("/add")
     public ResponseEntity<Void> addParticipantToConversation(
             @RequestBody @Valid AddParticipantRequest request
