@@ -288,7 +288,7 @@ public class GroupService {
     }
 
     public void editGroup(Map<String, String> map, long groupId)throws AccessDeniedException {
-        if(!this.participantRepository.findByUserIdAndGroupId(this.authService.getUserFromContext().getId(), groupId).isPresent())
+        if(!this.participantRepository.findByUserIdAndGroupId(groupId, this.authService.getUserFromContext().getId()).isPresent())
             throw new AccessDeniedException("You are not allowed to edit this group");
         Group group = this.groupRepository.findById(groupId).orElseThrow(
                 () -> new GroupNotFoundException("Group doesnt Exists")
