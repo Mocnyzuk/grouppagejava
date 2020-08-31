@@ -34,6 +34,9 @@ public class Group extends AbstractEntityDate{
     @Column(unique = true, nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private String color;
+
     private String description;
 
     @Column(columnDefinition = "boolean default false")

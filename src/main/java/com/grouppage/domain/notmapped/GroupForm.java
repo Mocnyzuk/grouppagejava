@@ -31,10 +31,9 @@ public class GroupForm {
     public Participant getParticipant() {
         Participant participant = new Participant();
         participant.setNickname(this.form.get("nickname"));
-        participant.setEnabled(true);
+        participant.setEnabled(this.form.size() == 1);
         return participant;
     }
-
     @JsonIgnore
     public SignUpForm getSignUpForm() {
         String nickname = this.form.get("nickname");

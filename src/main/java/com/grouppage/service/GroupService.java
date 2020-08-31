@@ -8,9 +8,7 @@ import com.grouppage.domain.repository.ParticipantRepository;
 import com.grouppage.domain.repository.PostRepository;
 import com.grouppage.domain.repository.SignUpFormRepository;
 import com.grouppage.domain.response.*;
-import com.grouppage.exception.GroupNotFoundException;
-import com.grouppage.exception.ParticipantNotFountException;
-import com.grouppage.exception.PostNotFoundException;
+import com.grouppage.exception.*;
 import com.grouppage.service.auth.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,11 +19,14 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -265,5 +266,67 @@ public class GroupService {
     public List<ParticipantLight> getAllParticipants(long groupId) {
         return this.participantRepository.findAllByGroupId(groupId).stream()
                 .map(ParticipantLight::fromParticipant).collect(Collectors.toList());
+    }
+
+    public List<SignUpFormLight> getAllSignUpForms(long groupId) throws ThisGroupDoesntIncludeForm {
+        Participant participant = this.participantRepository.findByUserIdAndGroupIdFetchGroup(groupId,
+                this.authService.getUserFromContext().getId()).orElseThrow(
+                () -> new ParticipantNotFountException("User doesnt hae participant in this group")
+        );
+        if(participant.getGroup().isForm()){
+            return this.signUpFormRepository.findAllByGroupIdFetchGroup(groupId).stream().map(
+                    s -> SignUpFormLight.fromSignUpForm(s, s.getGroup().getId())
+            ).collect(Collectors.toList());
+        }
+        throw new ThisGroupDoesntIncludeForm("This Group doesnt use forms to accept users");
+    }
+
+    public void acceptThisParticipants(String[] nicknames, long groupId) throws WrongDataPostedException {
+        List<Participant> participants = this.participantRepository.findAllByNicknameAndGroupId(nicknames, groupId);
+        if(participants.size() != nicknames.length) throw new WrongDataPostedException("Array z nickami uczestników zawiera nieprawidłowy nickname!");
+        this.participantRepository.saveAll(participants.stream().peek(p -> p.setEnabled(true)).collect(Collectors.toList()));
+    }
+
+    public void editGroup(Map<String, String> map, long groupId)throws AccessDeniedException {
+        if(!this.participantRepository.findByUserIdAndGroupId(this.authService.getUserFromContext().getId(), groupId).isPresent())
+            throw new AccessDeniedException("You are not allowed to edit this group");
+        Group group = this.groupRepository.findById(groupId).orElseThrow(
+                () -> new GroupNotFoundException("Group doesnt Exists")
+        );
+        this.groupRepository.save(this.fromMap(map, group));
+    }
+    public Group fromMap(Map<String, String> map, Group group){
+        map.remove("id");
+        map.remove("Id");
+        map.remove("participantCount");
+        map.remove("participantcount");
+        map.remove("creatorId");
+        map.remove("creatorid");
+
+        List<Method> methods = Arrays.asList(Group.class.getMethods());
+        Set<Map.Entry<String, String>> entries = map.entrySet();
+        for (Map.Entry<String, String> stringStringEntry : entries) {
+            String key = stringStringEntry.getKey();
+            String a = String.valueOf(key.charAt(0));
+            key = key.replaceFirst(a, a.toUpperCase());
+            String finalKey = key;
+            methods.stream().filter(m -> m.getName().contains(finalKey) && m.getReturnType() == void.class).findFirst()
+                    .ifPresent(m -> {
+                        try {
+                            String value = stringStringEntry.getValue();
+                            Object zwroc = value;
+                            List<Class<?>> params = Arrays.asList(m.getParameterTypes());
+                            if (params.stream().anyMatch(p -> p.getName().equals("boolean"))) {
+                                Pattern pattern = Pattern.compile("[0-9]");
+                                boolean isDigit = pattern.matcher(value).find();
+                                zwroc = isDigit ? Integer.parseInt(value) >= 1 : Boolean.parseBoolean(value);
+                            }
+                            m.invoke(group, zwroc);
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
+                    });
+        }
+        return group;
     }
 }

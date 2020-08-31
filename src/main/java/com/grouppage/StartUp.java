@@ -166,6 +166,7 @@ public class StartUp implements CommandLineRunner {
         group.setPrivate(false);
         group.setForm(false);
         group.setCreatorId(1);
+        group.setColor("#FFAACC");
         group.setReaction(this.likes);
         group.setParticipantCount(1);
         group.setInviteCode(UUID.randomUUID().toString());

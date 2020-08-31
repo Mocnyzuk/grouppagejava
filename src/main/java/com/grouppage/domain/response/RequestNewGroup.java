@@ -27,6 +27,8 @@ public class RequestNewGroup {
     @Size(min = 2)
     private String description;
     @NotNull
+    private String color;
+    @NotNull
     @Size(min = 2)
     private String category;
     @NotNull
@@ -46,6 +48,7 @@ public class RequestNewGroup {
         group.setDescription(this.description);
         group.setCategory(this.category);
         group.setImageId(this.imagePath);
+        group.setColor(this.color);
         group.setPrivate(this.isPrivate);
         group.setAccept(this.isPrivate || this.isAccept);
         group.setInviteCode(UUID.randomUUID().toString());

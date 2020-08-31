@@ -212,6 +212,7 @@ class GroupControllerIntegrationTest {
                                         "administratoros",
                                         "groupaadministratorosa",
                                         "groupdescofadminisratosoa",
+                                        "#AADDEE",
                                         "caegory of this new group",
                                         "iamge",
                                         false,

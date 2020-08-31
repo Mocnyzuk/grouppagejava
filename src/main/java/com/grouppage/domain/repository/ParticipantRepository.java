@@ -33,4 +33,13 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     List<Participant> findAllByGroupIdFetchGroup(@Param("id") long id);
 
     Optional<Participant> findByNickname(String nickname);
+
+    @Query(value = "select p from Participant p join fetch p.group g where g.id = :groupId and p.user.id = :userId")
+    Optional<Participant> findByUserIdAndGroupIdFetchGroup(@Param("groupId")long groupId, @Param("userId")long userId);
+
+    @Query(value = "select p from Participant p where p.group.id = :groupId and p.user.id = :userId")
+    Optional<Participant> findByUserIdAndGroupId(@Param("groupId")long groupId, @Param("userId")long userId);
+
+    @Query(value = "select p from Participant p where p.nickname in :nicknames and p.group.id = :groupId")
+    List<Participant> findAllByNicknameAndGroupId(@Param("nicknames")String[] nicknames, long groupId);
 }

@@ -3,6 +3,7 @@ package com.grouppage.web.rest;
 import com.grouppage.domain.notmapped.GroupForm;
 import com.grouppage.domain.notmapped.GroupLight;
 import com.grouppage.domain.notmapped.ParticipantLight;
+import com.grouppage.domain.notmapped.SignUpFormLight;
 import com.grouppage.domain.response.*;
 import com.grouppage.exception.WrongDataPostedException;
 import com.grouppage.service.GroupService;
@@ -50,6 +51,30 @@ public class GroupController {
         Page<PostResponse> response = groupService.getPostForGroupId(groupId, page, size, sort);
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/{groupId}/forms")
+    public ResponseEntity<List<SignUpFormLight>> getAllForms(
+            @PathVariable("groupId") String groupId
+    ) {
+        return ResponseEntity.ok(this.groupService.getAllSignUpForms(Long.parseLong(groupId)));
+    }
+    @PostMapping("/{groupId}/forms")
+    public ResponseEntity<Void> acceptForms(
+            @PathVariable("groupId") String groupId,
+            @RequestBody String[] nicknames
+    ){
+        this.groupService.acceptThisParticipants(nicknames, Long.parseLong(groupId));
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping("/{groupId}/edit")
+    public ResponseEntity<Void> editGroup(
+            @PathVariable("groupId") String groupId,
+            @RequestBody Map<String, String> map
+    ){
+        this.groupService.editGroup(map, Long.parseLong(groupId)) ;
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
     @GetMapping("/{groupId}/participants")
     public ResponseEntity<List<ParticipantLight>> getAllParticipants(
             @PathVariable(name = "groupId") long groupId

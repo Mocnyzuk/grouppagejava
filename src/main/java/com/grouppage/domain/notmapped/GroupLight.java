@@ -1,11 +1,16 @@
 package com.grouppage.domain.notmapped;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.grouppage.domain.entity.Group;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.regex.Pattern;
 
 @Data
 @NoArgsConstructor
@@ -17,6 +22,8 @@ public class GroupLight {
     private String category;
     @NotNull
     private String name;
+    @NotNull
+    private String color;
     @NotNull
     private String description;
     @NotNull
@@ -36,7 +43,7 @@ public class GroupLight {
 
     public static GroupLight fromGroup(Group group){
         return new GroupLight(group.getId(), group.getCategory(),
-                group.getName(), group.getDescription(),
+                group.getName(), group.getColor(),group.getDescription(),
                 group.isPrivate(), group.isAccept(), group.isForm(),
                 group.getInviteCode(), group.getParticipantCount(),
                 group.getImageId(), group.getCreatorId());
@@ -48,6 +55,7 @@ public class GroupLight {
         result.setDescription(group.getDescription());
         result.setPrivate(group.isPrivate());
         result.setName(group.getName());
+        result.setColor(group.getColor());
         result.setAccept(group.isAccept());
         result.setForm(group.isForm());
         result.setInviteCode(group.getInviteCode());
@@ -56,4 +64,5 @@ public class GroupLight {
         result.setCreatorId(group.getCreatorId());
         return result;
     }
+
 }

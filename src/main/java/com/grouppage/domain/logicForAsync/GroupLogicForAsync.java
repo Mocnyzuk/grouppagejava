@@ -6,21 +6,18 @@ import com.grouppage.domain.notmapped.GroupLight;
 import com.grouppage.domain.notmapped.PostLight;
 import com.grouppage.domain.repository.*;
 import com.grouppage.domain.response.DashboardResponse;
-import com.grouppage.domain.response.InviteParticipant;
 import com.grouppage.domain.response.RequestNewGroup;
 import com.grouppage.exception.GroupNotFoundException;
 import com.grouppage.exception.ParticipantNotFountException;
 import com.grouppage.exception.PostNotFoundException;
 import com.grouppage.exception.ReactionNotFoundException;
 import com.grouppage.service.ExecService;
-import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 

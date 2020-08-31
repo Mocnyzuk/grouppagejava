@@ -41,7 +41,8 @@ public class ErrorMapper {
             WrongDataPostedException.class,
             AuthenticationException.class,
             BadCredentialsException.class,
-            NumberFormatException.class
+            NumberFormatException.class,
+            ThisGroupDoesntIncludeForm.class
     })
     public ResponseEntity<String> wrongDataPosted(Exception ex){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());

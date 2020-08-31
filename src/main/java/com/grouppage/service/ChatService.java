@@ -51,8 +51,6 @@ public class ChatService {
     private final ExecService execService;
 
     private final String HASH = "H";
-    private final char HASH_CHAR = '#';
-
 
     public ChatService(ParticipantRepository participantRepository,
                        ConversationRepository conversationRepository,
@@ -71,7 +69,8 @@ public class ChatService {
     }
 
 
-    public void handleNewChat(SocketMessage socketMessage, String receiver) throws WrongDataPostedException, ExecutionException, InterruptedException, AccessDeniedException {
+    public void handleNewChat(SocketMessage socketMessage, String receiver)
+            throws WrongDataPostedException, ExecutionException, InterruptedException, AccessDeniedException {
         if(!receiver.isEmpty() && null == socketMessage){
             throw new WrongDataPostedException("Posted data is invalid!");
         }

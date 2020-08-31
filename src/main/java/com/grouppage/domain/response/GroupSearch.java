@@ -19,6 +19,8 @@ public class GroupSearch {
     @NotNull
     private String name;
     @NotNull
+    private String color;
+    @NotNull
     private String description;
     @NotNull
     private boolean isPrivate;
@@ -39,7 +41,7 @@ public class GroupSearch {
 
     public static GroupSearch fromGroup(Group group, boolean isMember){
         return new GroupSearch(group.getId(), group.getCategory(),
-                group.getName(), group.getDescription(),
+                group.getName(), group.getColor(), group.getDescription(),
                 group.isPrivate(), group.isAccept(), group.isForm(),
                 group.getInviteCode(), group.getParticipantCount(),
                 group.getImageId(), group.getCreatorId(), isMember);
@@ -52,6 +54,7 @@ public class GroupSearch {
         result.setDescription(group.getDescription());
         result.setPrivate(group.isPrivate());
         result.setName(group.getName());
+        result.setColor(group.getColor());
         result.setAccept(group.isAccept());
         result.setForm(group.isForm());
         result.setInviteCode(group.getInviteCode());
