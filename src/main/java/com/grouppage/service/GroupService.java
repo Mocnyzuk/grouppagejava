@@ -95,7 +95,8 @@ public class GroupService {
             throw new AccessDeniedException("You do not participate in this group!");
         Pageable pageable = this.generatePageable(page, size, sort);
         List<PostResponse> posts =  postRepository.findAllByGroupIdFetchAuthor(groupId).stream()
-                .map(p -> PostResponse.fromPost(p, groupId)).collect(Collectors.toList());
+                .map(p -> PostResponse.fromPost(p, groupId))
+                .sorted(Comparator.comparing(PostResponse::getCreatedDate).reversed()).collect(Collectors.toList());
         return this.generatePage(posts, pageable);
     }
 

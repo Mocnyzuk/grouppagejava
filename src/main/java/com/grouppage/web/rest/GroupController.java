@@ -1,7 +1,6 @@
 package com.grouppage.web.rest;
 
 import com.grouppage.domain.notmapped.GroupForm;
-import com.grouppage.domain.notmapped.GroupLight;
 import com.grouppage.domain.notmapped.ParticipantLight;
 import com.grouppage.domain.notmapped.SignUpFormLight;
 import com.grouppage.domain.response.*;
