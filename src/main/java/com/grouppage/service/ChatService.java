@@ -105,8 +105,8 @@ public class ChatService {
         if (!socketMessage.getType().equals(Type.CHAT)){
             throw new WrongDataPostedException("Group message posted to private handler!");
         }
-        if(this.checkOwnerOfParcitipant(socketMessage.getParticipantId()))
-            throw new AccessDeniedException("You dont own this participant");
+//        if(this.checkOwnerOfParcitipant(socketMessage.getParticipantId()))
+//            throw new AccessDeniedException("You dont own this participant");
         Conversation conversationFuture = this.conversationRepository.findById(conversationId).orElseThrow(
                 () -> new ConversationNotFoundException("COnv not foud with id: "+conversationId)
         );
