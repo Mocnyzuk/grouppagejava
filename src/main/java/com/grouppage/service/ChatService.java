@@ -91,7 +91,7 @@ public class ChatService {
             List<ParticipantLight> pLights = Stream.of(pierwszy, drugi).map(ParticipantLight::fromParticipant).collect(Collectors.toList());
             System.out.println(Arrays.toString(userIds.toArray()));
             userIds.forEach(id -> this.sendMessageOrPost(id,
-                    new ConversationMessage(id.equals(userIds.get(0)) ? userIds.get(1) : userIds.get(0), conv.getId(), pLights, socketMessage.getType())));
+                    new ConversationMessage(id.equals(pierwszy.getId()) ? drugi.getId() : pierwszy.getId(), conv.getId(), pLights, socketMessage.getType())));
 
         }else{
             this.processNewPrivateMessage(socketMessage, conv.getId());
