@@ -92,7 +92,7 @@ public class ChatService {
             List<ParticipantLight> pLights = Stream.of(pierwszy, drugi).map(ParticipantLight::fromParticipant).collect(Collectors.toList());
             System.out.println(Arrays.toString(userIds.toArray()));
             all.forEach(part -> this.sendMessageOrPost(part.getUser().getId(),
-                    new ConversationMessage(part.getUser().getId() == (pierwszy.getUser().getId()) ? drugi.getUser().getId() : pierwszy.getUser().getId(),
+                    new ConversationMessage(part.getUser().getId() == (pierwszy.getUser().getId()) ? drugi.getId() : pierwszy.getId(),
                             conv.getId(), pLights, socketMessage.getType())));
 
         }else{
