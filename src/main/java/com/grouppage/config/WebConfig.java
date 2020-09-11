@@ -14,10 +14,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        WebContentInterceptor interceptor = new WebContentInterceptor();
-        interceptor.addCacheMapping(CacheControl.maxAge(300, TimeUnit.SECONDS)
-                .noTransform()
-                .mustRevalidate(), "/**");
-        registry.addInterceptor(interceptor);
+//        WebContentInterceptor interceptor = new WebContentInterceptor();
+//        interceptor.addCacheMapping(CacheControl.maxAge(300, TimeUnit.SECONDS)
+//                .noTransform()
+//                .mustRevalidate(), "/**");
+//        registry.addInterceptor(interceptor);
     }
 }
