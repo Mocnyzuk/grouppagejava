@@ -83,15 +83,17 @@ public class ChatService {
         }
         conversation.setParticipants(partis);
         Conversation conv = conversationRepository.save(conversation);
-        System.out.println("CONVERSATION ID: " + conv.getId() );
+        System.out.println("CONVERSATION ID: " + conv.getId());
         if(socketMessage.getType() == Type.NEW){
             Participant pierwszy = first.get();
             Participant drugi = second.get();
             List<Long> userIds = Arrays.asList(drugi.getUser().getId(), pierwszy.getUser().getId());
+            List<Participant> all = Arrays.asList(pierwszy, drugi);
             List<ParticipantLight> pLights = Stream.of(pierwszy, drugi).map(ParticipantLight::fromParticipant).collect(Collectors.toList());
             System.out.println(Arrays.toString(userIds.toArray()));
-            userIds.forEach(id -> this.sendMessageOrPost(id,
-                    new ConversationMessage(id.equals(pierwszy.getId()) ? drugi.getId() : pierwszy.getId(), conv.getId(), pLights, socketMessage.getType())));
+            all.forEach(part -> this.sendMessageOrPost(part.getUser().getId(),
+                    new ConversationMessage(part.getUser().getId() == (pierwszy.getUser().getId()) ? drugi.getUser().getId() : pierwszy.getUser().getId(),
+                            conv.getId(), pLights, socketMessage.getType())));
 
         }else{
             this.processNewPrivateMessage(socketMessage, conv.getId());
