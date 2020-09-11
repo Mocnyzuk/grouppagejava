@@ -15,6 +15,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -56,7 +57,7 @@ public class AuthService {
         this.jwtProvider = jwtProvider;
     }
 
-    public ResponseEntity<User> signIn(LoginRequest loginRequest) throws ExecutionException, InterruptedException {
+    public ResponseEntity<User> signIn(LoginRequest loginRequest) throws ExecutionException, InterruptedException, AccessDeniedException {
         Authentication authentication =
                 authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(
@@ -95,8 +96,11 @@ public class AuthService {
     /**
      * Class level logic
      */
-    public User getUserFromContext()throws UsernameNotFoundException{
+    public User getUserFromContext() throws UsernameNotFoundException, AccessDeniedException {
         Object objectPrincipal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(objectPrincipal == null){
+            throw new AccessDeniedException("STOP WHERE YOU ARE!!!");
+        }
         String email;
         if(objectPrincipal instanceof UserDetails) {
             email = ((UserDetails) objectPrincipal).getUsername();
@@ -106,7 +110,7 @@ public class AuthService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User with email "+ email+" doesnt exists!"));
     }
-    private HttpHeaders generateCookieWithNewTokens() throws ExecutionException, InterruptedException {
+    private HttpHeaders generateCookieWithNewTokens() throws ExecutionException, InterruptedException, AccessDeniedException {
         HttpHeaders headers = new HttpHeaders();
         User user = this.getUserFromContext();
         Future<Token> futureAcces = execService.executeCallable(
@@ -132,11 +136,11 @@ public class AuthService {
         }
     }
 
-    public List<Layout> getLayouts() {
+    public List<Layout> getLayouts() throws AccessDeniedException {
         return this.getUserFromContext().getLayouts();
     }
 
-    public void saveLayout(Layout layout) {
+    public void saveLayout(Layout layout) throws AccessDeniedException {
         User user = this.getUserFromContext();
         List<Layout> layouts = user.getLayouts();
         if(layouts == null){
@@ -147,7 +151,7 @@ public class AuthService {
         this.userRepository.save(user);
     }
 
-    public void saveLayouts(List<Layout> layouts) {
+    public void saveLayouts(List<Layout> layouts) throws AccessDeniedException {
         User user = this.getUserFromContext();
         List<Layout> old = user.getLayouts();
         if(old != null){
@@ -158,13 +162,13 @@ public class AuthService {
         this.userRepository.save(user);
     }
 
-    public void deleteLayout(String name) {
+    public void deleteLayout(String name) throws AccessDeniedException {
         User user = this.getUserFromContext();
         user.setLayouts(user.getLayouts().stream().filter(l -> !l.getName().equals(name)).collect(Collectors.toList()));
         this.userRepository.save(user);
     }
 
-    public void editLayout(Layout layout) {
+    public void editLayout(Layout layout) throws AccessDeniedException {
         User user = this.getUserFromContext();
         user.setLayouts(user.getLayouts().stream().filter(l -> !l.getName().equals(layout.getName())).collect(Collectors.toList()));
         user.getLayouts().add(layout);

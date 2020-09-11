@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.concurrent.ExecutionException;
 
 @RestController
@@ -26,8 +27,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<User> login(
             @RequestBody LoginRequest loginRequest
-    ) throws WrongCredentialsException, ExecutionException, InterruptedException {
+    ) throws WrongCredentialsException, ExecutionException, InterruptedException, AccessDeniedException {
         return authService.signIn(loginRequest);
+    }
+    @GetMapping("/me")
+    public ResponseEntity<Object> me() throws AccessDeniedException {
+        return ResponseEntity.ok(authService.getUserFromContext());
     }
 
     @PostMapping("/register")

@@ -102,7 +102,7 @@ public class GroupService {
 
 
 
-    public Page<GroupSearch> findGroupBySearchPhrase(String phrase, Integer size, String page, String sort, boolean member) throws NumberFormatException{
+    public Page<GroupSearch> findGroupBySearchPhrase(String phrase, Integer size, String page, String sort, boolean member) throws NumberFormatException, AccessDeniedException {
         Pageable pageable = this.generatePageable(Integer.parseInt(page), size, sort);
         List<GroupSearch> groups;
         if(false){
@@ -160,11 +160,11 @@ public class GroupService {
         return new PageImpl<>(list.subList(start, Math.toIntExact(end)), pageable, list.size());
     }
 
-     private boolean checkOwnerOfParticipant(Participant participant) {
+     private boolean checkOwnerOfParticipant(Participant participant) throws AccessDeniedException {
         User user = this.authService.getUserFromContext();
         return participant.getUser().getId() != user.getId();
     }
-    private boolean checkIfUserIsParticipantInGroup(long groupId){
+    private boolean checkIfUserIsParticipantInGroup(long groupId) throws AccessDeniedException {
         User user = this.authService.getUserFromContext();
         List<Participant> participants = this.participantRepository.findAllByUserFetchGroup(user);
         return participants.stream().anyMatch(p -> p.getGroup().getId() == groupId);
