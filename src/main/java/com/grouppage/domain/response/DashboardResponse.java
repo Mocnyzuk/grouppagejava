@@ -15,6 +15,7 @@ public class DashboardResponse {
 
     private GroupLight group;
     private long participantId;
+    private String nickname;
     private List<PostLight> posts;
 
 }

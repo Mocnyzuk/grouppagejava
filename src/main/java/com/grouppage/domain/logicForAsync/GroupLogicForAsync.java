@@ -99,6 +99,9 @@ public class GroupLogicForAsync {
                 response.setParticipantId(participants.stream().filter(p -> p.getGroup().getId() == g.getId()).findFirst().orElseThrow(
                         () -> new ParticipantNotFountException("Participant not gffound")
                 ).getId());
+                response.setNickname(participants.stream().filter(p -> p.getGroup().getId() == g.getId()).findFirst().orElseThrow(
+                        () -> new ParticipantNotFountException("Participant not gffound")
+                ).getNickname());
                 list.add(response);
             });
             return list;

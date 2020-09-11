@@ -34,14 +34,14 @@ class DashboardControllerUnitTest {
     @Test
     void getDashboardResponse() throws InterruptedException, ExecutionException, TimeoutException {
         List<DashboardResponse> list = Arrays.asList(
-                new DashboardResponse(null, 0L, null),
-                new DashboardResponse(null, 0L,null),
-                new DashboardResponse(null, 0L,null),
-                new DashboardResponse(null, 0L,null),
-                new DashboardResponse(null, 0L,null),
-                new DashboardResponse(null, 0L,null),
-                new DashboardResponse(null, 0L,null),
-                new DashboardResponse(null, 0L,null)
+                new DashboardResponse(null, 0L,"", null),
+                new DashboardResponse(null, 0L,"",null),
+                new DashboardResponse(null, 0L,"",null),
+                new DashboardResponse(null, 0L,"",null),
+                new DashboardResponse(null, 0L,"",null),
+                new DashboardResponse(null, 0L,"",null),
+                new DashboardResponse(null, 0L,"",null),
+                new DashboardResponse(null, 0L,"",null)
         );
         doReturn(list)
                 .when(groupService)
