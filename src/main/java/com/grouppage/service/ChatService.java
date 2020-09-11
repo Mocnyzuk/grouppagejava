@@ -6,10 +6,7 @@ import com.grouppage.domain.entity.Post;
 import com.grouppage.domain.entity.User;
 import com.grouppage.domain.entity.chat.Conversation;
 import com.grouppage.domain.entity.chat.PrivateMessage;
-import com.grouppage.domain.notmapped.HashTag;
-import com.grouppage.domain.notmapped.SocketMessage;
-import com.grouppage.domain.notmapped.SocketOutMessage;
-import com.grouppage.domain.notmapped.Type;
+import com.grouppage.domain.notmapped.*;
 import com.grouppage.domain.repository.GroupRepository;
 import com.grouppage.domain.repository.ParticipantRepository;
 import com.grouppage.domain.repository.PostRepository;
@@ -34,6 +31,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional
@@ -87,10 +85,14 @@ public class ChatService {
         Conversation conv = conversationRepository.save(conversation);
         System.out.println("CONVERSATION ID: " + conv.getId() );
         if(socketMessage.getType() == Type.NEW){
-            List<Long> userIds = Arrays.asList(second.get().getUser().getId(), first.get().getUser().getId());
+            Participant pierwszy = first.get();
+            Participant drugi = second.get();
+            List<Long> userIds = Arrays.asList(drugi.getUser().getId(), pierwszy.getUser().getId());
+            List<ParticipantLight> pLights = Stream.of(pierwszy, drugi).map(ParticipantLight::fromParticipant).collect(Collectors.toList());
             System.out.println(Arrays.toString(userIds.toArray()));
-            this.sendMessageOrPost(userIds,
-                    new SocketOutMessage(socketMessage.getParticipantId(), conv.getId(), "", socketMessage.getType()));
+            userIds.forEach(id -> this.sendMessageOrPost(id,
+                    new ConversationMessage(id.equals(userIds.get(0)) ? userIds.get(1) : userIds.get(0), conv.getId(), pLights, socketMessage.getType())));
+
         }else{
             this.processNewPrivateMessage(socketMessage, conv.getId());
         }
@@ -191,6 +193,11 @@ public class ChatService {
                     () -> this.simpMessagingTemplate.convertAndSend("/topic/" + userId, message)
             );
         }
+    }
+    public void sendMessageOrPost(long userId, ConversationMessage message){
+            execService.executeRunnable(
+                    () -> this.simpMessagingTemplate.convertAndSend("/topic/" + userId, message)
+            );
     }
     private boolean checkOwnerOfParcitipant(long participantId) {
         Participant participant = this.participantRepository.findByIdFetchUser(participantId).orElseThrow(
