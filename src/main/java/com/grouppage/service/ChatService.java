@@ -162,11 +162,9 @@ public class ChatService {
         if(participantFuture.get().stream().noneMatch(p -> p.getId() == socketMessage.getParticipantId()))
             throw new AccessDeniedException("You have no permission do send posts here!");
         List<Long> userIds = participantFuture.get().stream().map(p -> p.getUser().getId()).distinct().collect(Collectors.toList());
-
+        execService.executeCallable(() -> postRepository.save(messageFuture.get()));
         this.sendMessageOrPost(userIds,
                 new SocketOutMessage(socketMessage.getParticipantId(), groupId, socketMessage.getContent(), socketMessage.getType()));
-        Post post = messageFuture.get();
-        execService.executeCallable(() -> postRepository.save(post));
     }
 
     private Future<List<HashTag>> getHashTagsFromPost(String post){
