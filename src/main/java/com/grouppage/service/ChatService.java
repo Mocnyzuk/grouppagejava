@@ -25,6 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -272,5 +273,10 @@ public class ChatService {
                 .filter(c -> c.getParticipants().stream().anyMatch(p -> p.getUser().getId() == user.getId()))
                 .map(ConversationLight::fromConversation)
                 .collect(Collectors.toList());
+    }
+
+    public List<SocketMessage> getAllMessages(long conversationId) {
+        return this.privateMessageRepository.findAllByConversationId(conversationId).stream()
+                .map(SocketMessage::fromPrivateMessage).collect(Collectors.toList());
     }
 }

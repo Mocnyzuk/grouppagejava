@@ -1,5 +1,6 @@
 package com.grouppage.web.rest;
 
+import com.grouppage.domain.entity.chat.PrivateMessage;
 import com.grouppage.domain.notmapped.ConversationLight;
 import com.grouppage.domain.notmapped.SocketMessage;
 import com.grouppage.domain.response.AddParticipantRequest;
@@ -39,9 +40,15 @@ public class ChatController {
         this.chatService.addNewParticipantToConversation(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-    //@GetMapping("/{conversationId}")
+
     @GetMapping("/conversations")
     public ResponseEntity<List<ConversationLight>> getConversationList(){
         return ResponseEntity.ok(this.chatService.getConversations());
+    }
+    @GetMapping("/{conversationId}")
+    public ResponseEntity<List<SocketMessage>> getAllMessagesFromConversation(
+            @PathVariable("conversationId") String conversationId
+    ){
+        return ResponseEntity.ok(this.chatService.getAllMessages(Long.parseLong(conversationId)));
     }
 }
