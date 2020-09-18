@@ -272,6 +272,7 @@ public class ChatService {
         return conversations.stream()
                 .filter(c -> c.getParticipants().stream().anyMatch(p -> p.getUser().getId() == user.getId()))
                 .map(ConversationLight::fromConversation)
+                .filter(Group.distinctByKeys(ConversationLight::getId))
                 .collect(Collectors.toList());
     }
 
