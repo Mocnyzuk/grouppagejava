@@ -42,7 +42,8 @@ public class WebSocketChatEventListener {
                 .get("nickname");
         if(null != email){
             System.out.println("DISCOENCTEd " + event.toString());
-            System.out.println(email);
+            System.out.println("user to +" + event.getUser());
+            System.out.println("email to "+email);
         }
     }
 }
