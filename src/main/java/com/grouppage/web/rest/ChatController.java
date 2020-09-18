@@ -37,4 +37,5 @@ public class ChatController {
         this.chatService.addNewParticipantToConversation(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+    //@GetMapping("/{conversationId}")
 }

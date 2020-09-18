@@ -41,12 +41,8 @@ public class WebSocketChatEventListener {
                 .getSessionAttributes()
                 .get("nickname");
         if(null != email){
-            PrivateMessage message = new PrivateMessage();
-            message.setType("LEAVE");
-            // TODO insert sender and receiver to message by JWT or some others tool
-            message.setSender(null);
-            messagingTemplate.convertAndSend("/topic/public",
-                    message);
+            System.out.println("DISCOENCTEd " + event.toString());
+            System.out.println(email);
         }
     }
 }
