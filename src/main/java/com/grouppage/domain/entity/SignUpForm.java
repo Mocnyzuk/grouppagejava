@@ -27,4 +27,7 @@ public class SignUpForm extends AbstractEntityDate{
 
     @Convert(converter = GroupFormConverter.class)
     private GroupForm form;
+
+    private boolean checked = true;
 }
+

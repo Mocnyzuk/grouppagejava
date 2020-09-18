@@ -25,7 +25,7 @@ public class SignUpFormLight {
     }
     @JsonIgnore
     public SignUpForm toSignUpForm(Group group){
-        return new SignUpForm(this.id, group, this.nickname, this.form);
+        return new SignUpForm(this.id, group, this.nickname, this.form, false);
     }
     @JsonIgnore
     public SignUpForm toSignUpForm(){

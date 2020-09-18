@@ -4,6 +4,7 @@ import com.grouppage.domain.notmapped.ConversationInfoWithMessages;
 import com.grouppage.domain.notmapped.ConversationLight;
 import com.grouppage.domain.notmapped.SocketMessage;
 import com.grouppage.domain.response.AddParticipantRequest;
+import com.grouppage.domain.response.EditConversation;
 import com.grouppage.service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,5 +51,13 @@ public class ChatController {
             @PathVariable("conversationId") String conversationId
     ){
         return ResponseEntity.ok(this.chatService.getAllMessages(Long.parseLong(conversationId)));
+    }
+
+    @PostMapping("/edit")
+    public ResponseEntity<Void> editExistingConversation(
+            @RequestBody @Valid EditConversation edit
+    ){
+        this.chatService.editConversation(edit);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

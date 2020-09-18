@@ -285,6 +285,10 @@ public class GroupService {
     public void acceptThisParticipants(String[] nicknames, long groupId) throws WrongDataPostedException {
         List<Participant> participants = this.participantRepository.findAllByNicknameAndGroupId(nicknames, groupId);
         if(participants.size() != nicknames.length) throw new WrongDataPostedException("Array z nickami uczestników zawiera nieprawidłowy nickname!");
+        Group group = this.groupRepository.findById(groupId).orElseThrow(() -> new GroupNotFoundException("Group not found"));
+        List<SignUpForm> forms = this.signUpFormRepository.findAllByGroupIdFetchGroup(groupId);
+        List<String> nicks = Arrays.asList(nicknames);
+        this.signUpFormRepository.saveAll(forms.stream().filter(f -> nicks.contains(f.getNickname())).peek(f -> f.setChecked(true)).collect(Collectors.toList()));
         this.participantRepository.saveAll(participants.stream().peek(p -> p.setEnabled(true)).collect(Collectors.toList()));
     }
 

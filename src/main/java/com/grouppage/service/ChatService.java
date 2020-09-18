@@ -13,6 +13,7 @@ import com.grouppage.domain.repository.PostRepository;
 import com.grouppage.domain.repository.chat.ConversationRepository;
 import com.grouppage.domain.repository.chat.PrivateMessageRepository;
 import com.grouppage.domain.response.AddParticipantRequest;
+import com.grouppage.domain.response.EditConversation;
 import com.grouppage.exception.ConversationNotFoundException;
 import com.grouppage.exception.GroupNotFoundException;
 import com.grouppage.exception.ParticipantNotFountException;
@@ -290,5 +291,9 @@ public class ChatService {
                 conversation.getParticipants().stream().map(ParticipantLight::fromParticipant).collect(Collectors.toList()),
                 this.privateMessageRepository.findAllByConversationId(conversationId).stream()
                 .map(SocketMessage::fromPrivateMessage).collect(Collectors.toList()));
+    }
+
+    public void editConversation(EditConversation edit) {
+        //TODO edit conv
     }
 }

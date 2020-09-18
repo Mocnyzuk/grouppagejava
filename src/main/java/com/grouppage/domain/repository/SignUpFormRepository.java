@@ -14,6 +14,6 @@ public interface SignUpFormRepository extends JpaRepository<SignUpForm, Long> {
     @Query("select s from SignUpForm s where s.group.id = :groupId and s.nickname = 'example'")
     Optional<SignUpForm> findByGroupId(@Param("groupId") long groupId);
 
-    @Query(value = "select s from SignUpForm s join fetch s.group g where g.id = :groupId and s.nickname <> 'example'")
+    @Query(value = "select s from SignUpForm s join fetch s.group g where g.id = :groupId and s.nickname <> 'example' and s.checked = false")
     List<SignUpForm> findAllByGroupIdFetchGroup(@Param("groupId")long groupId);
 }
