@@ -19,5 +19,10 @@ public class WebConfig implements WebMvcConfigurer {
 //                .noTransform()
 //                .mustRevalidate(), "/**");
 //        registry.addInterceptor(interceptor);
+        WebContentInterceptor interceptor = new WebContentInterceptor();
+        interceptor.addCacheMapping(CacheControl.maxAge(0, TimeUnit.SECONDS)
+                .noTransform()
+                .mustRevalidate(), "/**");
+        registry.addInterceptor(interceptor);
     }
 }
