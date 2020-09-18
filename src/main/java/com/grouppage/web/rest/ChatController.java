@@ -1,5 +1,6 @@
 package com.grouppage.web.rest;
 
+import com.grouppage.domain.notmapped.ConversationLight;
 import com.grouppage.domain.notmapped.SocketMessage;
 import com.grouppage.domain.response.AddParticipantRequest;
 import com.grouppage.service.ChatService;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @RestController
@@ -38,4 +40,8 @@ public class ChatController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     //@GetMapping("/{conversationId}")
+    @GetMapping("/conversations")
+    public ResponseEntity<List<ConversationLight>> getConversationList(){
+        return ResponseEntity.ok(this.chatService.getConversations());
+    }
 }

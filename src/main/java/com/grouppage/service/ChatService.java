@@ -265,5 +265,12 @@ public class ChatService {
     }
 
 
-
+    public List<ConversationLight> getConversations() {
+        User user = this.authService.getUserFromContext();
+        List<Conversation> conversations = this.conversationRepository.findAllByFetchParticipants();
+        return conversations.stream()
+                .filter(c -> c.getParticipants().stream().anyMatch(p -> p.getUser().getId() == user.getId()))
+                .map(ConversationLight::fromConversation)
+                .collect(Collectors.toList());
+    }
 }
