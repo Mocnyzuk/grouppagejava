@@ -283,10 +283,11 @@ public class ChatService {
                 () -> new ConversationNotFoundException("conversation not found")
         );
         User user = this.authService.getUserFromContext();
-        long myParticipantId = conversation.getParticipants().stream().filter(p -> p.getUser().getId() == user.getId()).findFirst().orElseThrow(
+        Participant myParticipantId = conversation.getParticipants().stream().filter(p -> p.getUser().getId() == user.getId()).findFirst().orElseThrow(
                 () -> new AccessDeniedException(" you does not take part in this conv")
-        ).getId();
-        return new ConversationInfoWithMessages(myParticipantId,
+        );
+        return new ConversationInfoWithMessages(myParticipantId.getId(),
+                myParticipantId.getGroup().getId(),
                 conversation.getId(),
                 conversation.getParticipants().stream().map(ParticipantLight::fromParticipant).collect(Collectors.toList()),
                 this.privateMessageRepository.findAllByConversationId(conversationId).stream()

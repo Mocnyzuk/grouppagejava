@@ -14,6 +14,7 @@ import java.util.List;
 public class ConversationInfoWithMessages {
     @NotNull
     private long participantId;
+    private long groupId;
     @NotNull
     private long id;
     @NotNull
