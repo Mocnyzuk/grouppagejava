@@ -277,8 +277,8 @@ public class ChatService {
                 .collect(Collectors.toList());
     }
 
-    public List<SocketMessage> getAllMessages(long conversationId) {
+    public List<PrivateMessageForGet> getAllMessages(long conversationId) {
         return this.privateMessageRepository.findAllByConversationId(conversationId).stream()
-                .map(SocketMessage::fromPrivateMessage).collect(Collectors.toList());
+                .map(PrivateMessageForGet::fromPrivateMessage).collect(Collectors.toList());
     }
 }

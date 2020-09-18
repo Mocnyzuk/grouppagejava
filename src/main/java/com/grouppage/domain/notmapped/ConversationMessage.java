@@ -1,5 +1,7 @@
 package com.grouppage.domain.notmapped;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.grouppage.domain.entity.chat.PrivateMessage;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,4 +21,5 @@ public class ConversationMessage {
     private List<ParticipantLight> participants;
     @NotNull
     private Type type;
+
 }
