@@ -75,7 +75,7 @@ public class ChatService {
             throw new WrongDataPostedException("Posted data is invalid!");
         }
         Conversation conversation = new Conversation();
-        Future<Participant> first = execService.executeCallable(() -> participantRepository.findByIdFetchUser(socketMessage.getParticipantId())
+        Future<Participant> first = execService.executeCallable(() -> participantRepository.findByIdFetchUserFetchGroup(socketMessage.getParticipantId())
             .orElseThrow(() -> new WrongDataPostedException("Posted data is invalid!")));
         Future<Participant> second = execService.executeCallable(() -> participantRepository.findByIdFetchUser(Long.parseLong(receiver))
             .orElseThrow(() -> new WrongDataPostedException("Posted data is invalid!")));
@@ -95,6 +95,7 @@ public class ChatService {
             System.out.println(Arrays.toString(userIds.toArray()));
             all.forEach(part -> this.sendMessageOrPost(part.getUser().getId(),
                     new ConversationMessage(part.getUser().getId() == (pierwszy.getUser().getId()) ? drugi.getId() : pierwszy.getId(),
+                            pierwszy.getGroup().getId(),
                             conv.getId(), pLights, socketMessage.getType())));
 
         }else{

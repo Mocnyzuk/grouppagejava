@@ -15,6 +15,7 @@ import java.util.List;
 public class ConversationMessage {
     @NotNull
     private long participantId;
+    private long groupId;
     @NotNull
     private long id;
     @NotNull

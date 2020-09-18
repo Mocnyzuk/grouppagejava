@@ -29,6 +29,9 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     @Query(value = "select p from Participant p join fetch p.user u where p.id = :id")
     Optional<Participant> findByIdFetchUser(@Param("id") long id);
 
+    @Query(value = "select p from Participant p join fetch p.user u join fetch p.group g where p.id = :id")
+    Optional<Participant> findByIdFetchUserFetchGroup(@Param("id")long id);
+
     @Query(value = "select p from Participant p join fetch p.group g where g.id = :id")
     List<Participant> findAllByGroupIdFetchGroup(@Param("id") long id);
 
