@@ -277,8 +277,18 @@ public class ChatService {
                 .collect(Collectors.toList());
     }
 
-    public List<PrivateMessageForGet> getAllMessages(long conversationId) {
-        return this.privateMessageRepository.findAllByConversationId(conversationId).stream()
-                .map(PrivateMessageForGet::fromPrivateMessage).collect(Collectors.toList());
+    public ConversationInfoWithMessages getAllMessages(long conversationId) {
+        Conversation conversation = this.conversationRepository.findById(conversationId).orElseThrow(
+                () -> new ConversationNotFoundException("conversation not found")
+        );
+        User user = this.authService.getUserFromContext();
+        long myParticipantId = conversation.getParticipants().stream().filter(p -> p.getUser().getId() == user.getId()).findFirst().orElseThrow(
+                () -> new AccessDeniedException(" you does not take part in this conv")
+        ).getId();
+        return new ConversationInfoWithMessages(myParticipantId,
+                conversation.getId(),
+                conversation.getParticipants().stream().map(ParticipantLight::fromParticipant).collect(Collectors.toList()),
+                this.privateMessageRepository.findAllByConversationId(conversationId).stream()
+                .map(SocketMessage::fromPrivateMessage).collect(Collectors.toList()));
     }
 }

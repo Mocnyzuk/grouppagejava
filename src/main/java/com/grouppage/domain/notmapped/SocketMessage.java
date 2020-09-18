@@ -1,5 +1,6 @@
 package com.grouppage.domain.notmapped;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.grouppage.domain.entity.chat.PrivateMessage;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class SocketMessage {
     @NotNull
     private Type type;
 
+    @JsonIgnore
     public static SocketMessage fromPrivateMessage(PrivateMessage privateMessage) {
         return new SocketMessage(privateMessage.getSender().getId(),
                 privateMessage.getContent(),
