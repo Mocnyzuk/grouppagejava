@@ -111,6 +111,7 @@ public class ChatService {
         Conversation conversationFuture = this.conversationRepository.findById(conversationId).orElseThrow(
                 () -> new ConversationNotFoundException("COnv not foud with id: "+conversationId)
         );
+        System.out.println(conversationFuture);
         List<Participant> fromConv = conversationFuture.getParticipants();
         if(fromConv.stream().noneMatch(p -> p.getId() == socketMessage.getParticipantId()))
             throw new AccessDeniedException("You have no permission do send messages here!");

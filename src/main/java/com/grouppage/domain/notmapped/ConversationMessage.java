@@ -16,7 +16,7 @@ public class ConversationMessage {
     @NotNull
     private long id;
     @NotNull
-    private List<ParticipantLight> content;
+    private List<ParticipantLight> participants;
     @NotNull
     private Type type;
 }
