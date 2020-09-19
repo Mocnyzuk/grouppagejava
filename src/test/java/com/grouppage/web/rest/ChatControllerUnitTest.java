@@ -48,7 +48,7 @@ class ChatControllerUnitTest {
     @Test
     void shouldReturnNullWithStatusCreatedAddParticipant() throws ExecutionException, InterruptedException {
         Object response = this.chatController.addParticipantToConversation(
-                new AddParticipantRequest(1, null)
+                new AddParticipantRequest(1, 14)
         );
         assertNotNull(response);
         assertTrue(response instanceof ResponseEntity);
@@ -59,7 +59,7 @@ class ChatControllerUnitTest {
         doThrow(new ParticipantNotFountException("PArti doesnt exists")).when(chatService).addNewParticipantToConversation(any());
         try{
             this.chatController.addParticipantToConversation(
-                    new AddParticipantRequest(1, null)
+                    new AddParticipantRequest(1, 99999)
             );
         }catch (Exception e){
             assertTrue(e instanceof ParticipantNotFountException);
