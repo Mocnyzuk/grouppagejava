@@ -31,6 +31,7 @@ public class SocketController {
             @Payload SocketMessage socketMessage,
             @DestinationVariable String id
             ) throws ExecutionException, InterruptedException {
+        System.out.println(socketMessage);
         this.chatService.processNewPrivateMessage(socketMessage, Long.parseLong(id));
     }
 
@@ -39,6 +40,7 @@ public class SocketController {
             @Payload SocketMessage socketMessage,
             @DestinationVariable String participantId
     ) throws ExecutionException, InterruptedException {
+        System.out.println(socketMessage);
         this.chatService.handleNewChat(socketMessage, participantId);
     }
     @MessageMapping("/group/{id}/sendpost")
