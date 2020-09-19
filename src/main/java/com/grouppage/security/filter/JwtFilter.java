@@ -40,7 +40,7 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException, AccessTokenExpired, WrongCredentialsException {
-        if(!request.getRequestURI().contains(LOGIN) && !request.getRequestURI().contains(REGISTER)) {
+        if(request.getRequestURI().contains("api") && !request.getRequestURI().contains(LOGIN) && !request.getRequestURI().contains(REGISTER)) {
             UserDetails userDetails = this.getUser(request);
             this.processAuth(request, userDetails);
         }

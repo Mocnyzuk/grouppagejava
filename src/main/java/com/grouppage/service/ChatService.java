@@ -214,7 +214,7 @@ public class ChatService {
     public void addNewParticipantToConversation(AddParticipantRequest request) throws ExecutionException, InterruptedException {
         Conversation conv = this.conversationRepository.findById(request.getConversationId())
                 .orElseThrow(() -> new ConversationNotFoundException("Conversation with id: "+request.getConversationId()+ " doesnt exists!"));
-        Future<Participant> futurePart = execService.executeCallable(()->participantRepository.findById(request.getParticipantId())
+        Future<Participant> futurePart = execService.executeCallable(()->participantRepository.findById(request.getParticipantId().getId())
                 .orElseThrow(() -> new ParticipantNotFountException("Participant with id: "+ request.getParticipantId()+" doesnt exists!")));
         List<Participant> fromConv = conv.getParticipants();
         fromConv.add(futurePart.get());

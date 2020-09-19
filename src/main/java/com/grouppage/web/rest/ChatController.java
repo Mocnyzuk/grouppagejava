@@ -38,6 +38,7 @@ public class ChatController {
     public ResponseEntity<Void> addParticipantToConversation(
             @RequestBody @Valid AddParticipantRequest request
     ) throws ExecutionException, InterruptedException {
+        System.out.println(request);
         this.chatService.addNewParticipantToConversation(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
