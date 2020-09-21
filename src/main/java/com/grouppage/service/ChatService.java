@@ -201,6 +201,13 @@ public class ChatService {
             );
         }
     }
+    private void sendMessageOrPost(List<Long> userIds, NewParticipantMessage newParticipantMessage) {
+        for (Long userId : userIds) {
+            execService.executeRunnable(
+                    () -> this.simpMessagingTemplate.convertAndSend("/topic/" + userId, newParticipantMessage)
+            );
+        }
+    }
     public void sendMessageOrPost(long userId, ConversationMessage message){
             execService.executeRunnable(
                     () -> this.simpMessagingTemplate.convertAndSend("/topic/" + userId, message)
@@ -214,16 +221,19 @@ public class ChatService {
         return participant.getUser().getId() != user.getId();
     }
     public void addNewParticipantToConversation(AddParticipantRequest request) throws ExecutionException, InterruptedException {
-        Conversation conv = this.conversationRepository.findById(request.getConversationId())
+        Conversation conv = this.conversationRepository.findByIdFetchParticipants(request.getConversationId())
                 .orElseThrow(() -> new ConversationNotFoundException("Conversation with id: "+request.getConversationId()+ " doesnt exists!"));
         Future<Participant> futurePart = execService.executeCallable(()->participantRepository.findById(request.getParticipantId().getId())
                 .orElseThrow(() -> new ParticipantNotFountException("Participant with id: "+ request.getParticipantId()+" doesnt exists!")));
         List<Participant> fromConv = conv.getParticipants();
-        fromConv.add(futurePart.get());
+        Participant nowy = futurePart.get();
+        fromConv.add(nowy);
         conv.setParticipants(fromConv);
         conversationRepository.save(conv);
+        this.sendMessageOrPost(conv.getParticipants().stream().map(p -> p.getUser().getId()).collect(Collectors.toList()),
+                new NewParticipantMessage(nowy.getId(), conv.getId(),
+                        nowy.getNickname(), Type.CONVERSATION));
     }
-
 
 
 
