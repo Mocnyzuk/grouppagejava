@@ -334,4 +334,13 @@ public class GroupService {
         }
         return group;
     }
+
+    public void removeMeFromGroup(long groupId) {
+        User user = this.authService.getUserFromContext();
+        this.participantRepository.findByUserIdAndGroupId(groupId, user).ifPresent(p -> {
+            p.setEnabled(false);
+            p.setNickname("-deleted-"+p.getNickname());
+            this.participantRepository.save(p);
+        });
+    }
 }

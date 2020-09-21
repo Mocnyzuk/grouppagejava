@@ -50,14 +50,16 @@ public class ChatService {
     private final AuthService authService;
     private final ExecService execService;
 
-    private final String HASH = "H";
+    private static final String HASH = "H";
 
     public ChatService(ParticipantRepository participantRepository,
                        ConversationRepository conversationRepository,
                        PrivateMessageRepository privateMessageRepository,
                        GroupRepository groupRepository,
-                       PostRepository postRepository, SimpMessagingTemplate simpMessagingTemplate,
-                       AuthService authService, ExecService execService) {
+                       PostRepository postRepository,
+                       SimpMessagingTemplate simpMessagingTemplate,
+                       AuthService authService,
+                       ExecService execService) {
         this.participantRepository = participantRepository;
         this.conversationRepository = conversationRepository;
         this.privateMessageRepository = privateMessageRepository;
@@ -297,5 +299,15 @@ public class ChatService {
 
     public void editConversation(EditConversation edit) {
         //TODO edit conv
+    }
+
+    public void removeMeFromConversation(long conversationId) {
+        User user = this.authService.getUserFromContext();
+        this.conversationRepository.findByIdFetchParticipants(conversationId).ifPresent(c -> {
+            List<Participant> participants = c.getParticipants().stream()
+                    .filter(p -> !p.getUser().equals(user)).collect(Collectors.toList());
+            c.setParticipants(participants);
+            this.conversationRepository.save(c);
+        });
     }
 }

@@ -81,6 +81,13 @@ public class GroupController {
         return ResponseEntity.ok(this.groupService.getAllParticipants(groupId));
     }
 
+    @DeleteMapping("/{groupId}/leave")
+    public ResponseEntity<Void> leaveGroup(
+            @PathVariable(name = "groupId")String groupId
+    ){
+        this.groupService.removeMeFromGroup(Long.parseLong(groupId));
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
     @PostMapping
     public ResponseEntity<Void> handleNewPostInGroup (
             @RequestBody @Valid PostedPost post

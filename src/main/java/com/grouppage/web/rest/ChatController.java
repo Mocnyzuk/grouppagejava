@@ -42,6 +42,13 @@ public class ChatController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @DeleteMapping("/{conversationId}/leave")
+    public ResponseEntity<Void> leaveConversation(
+            @PathVariable(name = "conversationId")String conversationId
+    ){
+        this.chatService.removeMeFromConversation(Long.parseLong(conversationId));
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
     @GetMapping("/conversations")
     public ResponseEntity<List<ConversationLight>> getConversationList(){
         return ResponseEntity.ok(this.chatService.getConversations());

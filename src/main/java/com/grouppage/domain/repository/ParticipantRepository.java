@@ -43,6 +43,9 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     @Query(value = "select p from Participant p where p.group.id = :groupId and p.user.id = :userId")
     Optional<Participant> findByUserIdAndGroupId(@Param("groupId")long groupId, @Param("userId")long userId);
 
+    @Query(value = "select p from Participant p where p.group.id = :groupId and p.user = :user")
+    Optional<Participant> findByUserIdAndGroupId(@Param("groupId")long groupId, @Param("user")User user);
+
     @Query(value = "select p from Participant p where p.nickname in :nicknames and p.group.id = :groupId")
     List<Participant> findAllByNicknameAndGroupId(@Param("nicknames")String[] nicknames, long groupId);
 }
