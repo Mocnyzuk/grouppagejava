@@ -15,6 +15,6 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
     @Query(value = "select c from Conversation c join fetch c.participants p join fetch p.user")
     List<Conversation> findAllByFetchParticipants();
 
-    @Query(value = "select c from Conversation c join fetch c.participants")
-    Optional<Conversation> findByIdFetchParticipants(long id);
+    @Query(value = "select c from Conversation c join fetch c.participants where c.id = :id")
+    Optional<Conversation> findByIdFetchParticipants(@Parem(name = "id")long id);
 }
