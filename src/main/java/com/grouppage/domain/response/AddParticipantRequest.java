@@ -14,5 +14,5 @@ public class AddParticipantRequest {
     @NotNull
     private long conversationId;
     @NotNull
-    private ParticipantLight participantId;
+    private long participantId;
 }

@@ -73,7 +73,7 @@ class ChatControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                         MAPPER.writeValueAsString(
-                                new AddParticipantRequest(1, null)
+                                new AddParticipantRequest(1, 99)
                         )))
                 .andExpect(status().isCreated())
                 .andDo(print());
@@ -90,7 +90,7 @@ class ChatControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                         MAPPER.writeValueAsString(
-                                new AddParticipantRequest(1, null)
+                                new AddParticipantRequest(1, 1l)
                         )
                 ))
                 .andExpect(status().isNotFound())
@@ -108,7 +108,7 @@ class ChatControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                         MAPPER.writeValueAsString(
-                                new AddParticipantRequest(9999, null)
+                                new AddParticipantRequest(9999, 99999L)
                         )
                 ))
                 .andExpect(status().isNotFound())
