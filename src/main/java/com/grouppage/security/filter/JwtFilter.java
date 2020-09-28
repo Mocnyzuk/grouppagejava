@@ -24,14 +24,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private static final String BEARER = "Bearer ";
     private static final String LOGIN = "login";
+    private static final String API = "api";
     private static final String REGISTER = "register";
     private static final String WEBSOCKET = "websocket";
-    private final CustomUserDetailsService userDetailsService;
     private final JwtProvider jwtProvider;
 
-    public JwtFilter(CustomUserDetailsService userDetailsService,
-                     JwtProvider jwtProvider) {
-        this.userDetailsService = userDetailsService;
+    public JwtFilter(JwtProvider jwtProvider) {
         this.jwtProvider = jwtProvider;
     }
 
@@ -40,7 +38,9 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException, AccessTokenExpired, WrongCredentialsException {
-        if(!request.getRequestURI().contains(LOGIN) && !request.getRequestURI().contains(REGISTER)) {
+        String requestUri = request.getRequestURI();
+        if(requestUri.contains(API) && (!requestUri.contains(LOGIN) && !requestUri.contains(REGISTER))) {
+
             UserDetails userDetails = this.getUser(request);
             this.processAuth(request, userDetails);
         }
