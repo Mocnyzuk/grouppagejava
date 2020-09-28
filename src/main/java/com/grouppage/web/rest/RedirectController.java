@@ -8,8 +8,8 @@ import org.springframework.web.servlet.ModelAndView;
 public class RedirectController {
 
     @GetMapping("/")
-    public ModelAndView getIndex(){
-        return new ModelAndView("index");
+    public String getIndex(){
+        return "index.html";
     }
 //
 //    @GetMapping(value = "/**/{path:[^\\.]*}")
