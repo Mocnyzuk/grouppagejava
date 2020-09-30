@@ -81,9 +81,9 @@ public class ChatService {
         Future<Participant> second = execService.executeCallable(() -> participantRepository.findByIdFetchUser(Long.parseLong(receiver))
             .orElseThrow(() -> new WrongDataPostedException("Posted data is invalid!")));
         List<Participant> partis = Arrays.asList(first.get(), second.get());
-        if(this.checkOwnerOfParcitipant(socketMessage.getParticipantId())){
-            throw new AccessDeniedException("This participant is not yours");
-        }
+//        if(this.checkOwnerOfParcitipant(socketMessage.getParticipantId())){
+//            throw new AccessDeniedException("This participant is not yours");
+//        }
         conversation.setParticipants(partis);
         Conversation conv = conversationRepository.save(conversation);
         System.out.println("CONVERSATION ID: " + conv.getId());
@@ -142,8 +142,8 @@ public class ChatService {
         if(socketMessage.getType() != Type.GROUP){
             throw new WrongDataPostedException("Message is not a post for group!");
         }
-        if(this.checkOwnerOfParcitipant(socketMessage.getParticipantId()))
-            throw new AccessDeniedException("You dont own this participant");
+//        if(this.checkOwnerOfParcitipant(socketMessage.getParticipantId()))
+//            throw new AccessDeniedException("You dont own this participant");
         Future<List<HashTag>> hashTags = this.getHashTagsFromPost(socketMessage.getContent());
         Future<Group> groupFuture = execService.executeCallable(
                 () -> this.groupRepository.findById(groupId).orElseThrow(

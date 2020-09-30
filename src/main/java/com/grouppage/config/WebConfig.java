@@ -25,4 +25,5 @@ public class WebConfig implements WebMvcConfigurer {
                 .mustRevalidate(), "/**");
         registry.addInterceptor(interceptor);
     }
+
 }
