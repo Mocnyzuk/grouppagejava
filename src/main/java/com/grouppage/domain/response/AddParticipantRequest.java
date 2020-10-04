@@ -1,6 +1,5 @@
 package com.grouppage.domain.response;
 
-import com.grouppage.domain.notmapped.ParticipantLight;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -14,10 +14,10 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
 
     List<Participant> findAllByUser(User user);
 
-    @Query(value = "select p from Participant p join fetch p.group g where p.user = :user")
+    @Query(value = "select p from Participant p join fetch p.group g where p.user = :user and p.isEnabled = true")
     List<Participant> findAllByUserFetchGroup(@Param("user") User user);
 
-    @Query(value = "select p from Participant  p join fetch p.group g where p.user.id = :id ")
+    @Query(value = "select p from Participant  p join fetch p.group g where p.user.id = :id and p.isEnabled = true")
     List<Participant> findAllByUserIdFetchGroup(@Param("id") long id);
 
     List<Participant> findAllByUserId(long id);
@@ -26,24 +26,27 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
 
     List<Participant> findAllByGroupId(long id);
 
-    @Query(value = "select p from Participant p join fetch p.user u where p.id = :id")
+    @Query(value = "select p from Participant p join fetch p.user u where p.id = :id and p.isEnabled = true")
     Optional<Participant> findByIdFetchUser(@Param("id") long id);
 
-    @Query(value = "select p from Participant p join fetch p.user u join fetch p.group g where p.id = :id")
+    @Query(value = "select p from Participant p join fetch p.user u join fetch p.group g where p.id = :id and p.isEnabled = true")
     Optional<Participant> findByIdFetchUserFetchGroup(@Param("id")long id);
 
-    @Query(value = "select p from Participant p join fetch p.group g where g.id = :id")
+    @Query(value = "select p from Participant p join fetch p.group g where g.id = :id and p.isEnabled = true")
     List<Participant> findAllByGroupIdFetchGroup(@Param("id") long id);
 
     Optional<Participant> findByNickname(String nickname);
 
-    @Query(value = "select p from Participant p join fetch p.group g where g.id = :groupId and p.user.id = :userId")
+    @Query(value = "select p from Participant p join fetch p.group g where g.id = :groupId and p.user.id = :userId and p.isEnabled = true")
     Optional<Participant> findByUserIdAndGroupIdFetchGroup(@Param("groupId")long groupId, @Param("userId")long userId);
 
-    @Query(value = "select p from Participant p where p.group.id = :groupId and p.user.id = :userId")
+    @Query(value = "select p from Participant p join fetch p.group g where g.id = :groupId and p.user.id = :userId")
+    Optional<Participant> findByUserIdAndGroupIdFetchGroupIsNotEnabled(@Param("groupId")long groupId, @Param("userId")long userId);
+
+    @Query(value = "select p from Participant p where p.group.id = :groupId and p.user.id = :userId and p.isEnabled = true")
     Optional<Participant> findByUserIdAndGroupId(@Param("groupId")long groupId, @Param("userId")long userId);
 
-    @Query(value = "select p from Participant p where p.group.id = :groupId and p.user = :user")
+    @Query(value = "select p from Participant p where p.group.id = :groupId and p.user = :user and p.isEnabled = true")
     Optional<Participant> findByUserIdAndGroupId(@Param("groupId")long groupId, @Param("user")User user);
 
     @Query(value = "select p from Participant p where p.nickname in :nicknames and p.group.id = :groupId")

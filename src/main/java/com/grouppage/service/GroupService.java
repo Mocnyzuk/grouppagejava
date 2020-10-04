@@ -270,7 +270,7 @@ public class GroupService {
     }
 
     public List<SignUpFormLight> getAllSignUpForms(long groupId) throws ThisGroupDoesntIncludeForm {
-        Participant participant = this.participantRepository.findByUserIdAndGroupIdFetchGroup(groupId,
+        Participant participant = this.participantRepository.findByUserIdAndGroupIdFetchGroupIsNotEnabled(groupId,
                 this.authService.getUserFromContext().getId()).orElseThrow(
                 () -> new ParticipantNotFountException("User doesnt hae participant in this group")
         );
@@ -285,7 +285,7 @@ public class GroupService {
     public void acceptThisParticipants(String[] nicknames, long groupId) throws WrongDataPostedException {
         List<Participant> participants = this.participantRepository.findAllByNicknameAndGroupId(nicknames, groupId);
         if(participants.size() != nicknames.length) throw new WrongDataPostedException("Array z nickami uczestników zawiera nieprawidłowy nickname!");
-        Group group = this.groupRepository.findById(groupId).orElseThrow(() -> new GroupNotFoundException("Group not found"));
+        this.groupRepository.findById(groupId).orElseThrow(() -> new GroupNotFoundException("Group not found"));
         List<SignUpForm> forms = this.signUpFormRepository.findAllByGroupIdFetchGroup(groupId);
         List<String> nicks = Arrays.asList(nicknames);
         this.signUpFormRepository.saveAll(forms.stream().filter(f -> nicks.contains(f.getNickname())).peek(f -> f.setChecked(true)).collect(Collectors.toList()));
@@ -338,6 +338,7 @@ public class GroupService {
     public void removeMeFromGroup(long groupId) {
         User user = this.authService.getUserFromContext();
         this.participantRepository.findByUserIdAndGroupId(groupId, user).ifPresent(p -> {
+            if(!p.isEnabled()) return;
             p.setEnabled(false);
             p.setNickname("-deleted-"+p.getNickname());
             this.participantRepository.save(p);
