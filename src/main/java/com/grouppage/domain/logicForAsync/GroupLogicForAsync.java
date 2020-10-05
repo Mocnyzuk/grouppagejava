@@ -19,6 +19,7 @@ import javax.transaction.Transactional;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,27 +44,26 @@ public class GroupLogicForAsync {
         this.signUpFormRepository = signUpFormRepository;
     }
 
-    public Future<Post> upVote (Participant participant, long postId) throws PostNotFoundException, ParticipantNotFountException{
-        return this.execService.executeCallable(() -> {
-            Optional<Post> postBase = this.postRepository.findById(postId);
-            if (postBase.isPresent()) {
-                Post postBaseGet = postBase.get();
-                postBaseGet.setReactionCount(postBaseGet.getReactionCount() + 1);
-
-                Post result = this.postRepository.save(postBaseGet);
-                List<Post> liked = participant.getLikedPosts();
-                liked.add(result);
-                participant.setLikedPosts(liked);
-                this.participantRepository.save(participant);
-                return result;
-            }
-            throw new PostNotFoundException("Post with id: " + postId + " doesnt exists!");
-        });
+    public CompletableFuture<Post> upVote(Participant participant, long postId) throws PostNotFoundException, ParticipantNotFountException {
+        return CompletableFuture.supplyAsync(() -> {
+            AtomicReference<Post> result = new AtomicReference<>();
+            this.postRepository.findById(postId)
+                    .ifPresent(postBaseGet -> {
+                        postBaseGet.setReactionCount(postBaseGet.getReactionCount() + 1);
+                        result.set(this.postRepository.save(postBaseGet));
+                        List<Post> liked = participant.getLikedPosts();
+                        liked.add(result.get());
+                        participant.setLikedPosts(liked);
+                        this.participantRepository.save(participant);
+                    });
+            return result.get();
+        }, this.execService.getExecutor());
     }
-    public Future<Post> removeVote(Participant participant, long postId)throws PostNotFoundException, ParticipantNotFountException{
-        return this.execService.executeCallable(() -> {
+
+    public CompletableFuture<Post> removeVote(Participant participant, long postId) throws PostNotFoundException, ParticipantNotFountException {
+        return CompletableFuture.supplyAsync(() -> {
             Optional<Post> postBase = this.postRepository.findById(postId);
-            if(postBase.isPresent() && participant.getLikedPosts().contains(postBase.get())) {
+            if (postBase.isPresent() && participant.getLikedPosts().contains(postBase.get())) {
                 Post post = postBase.get();
                 post.setReactionCount(post.getReactionCount() - 1);
                 List<Post> liked = participant.getLikedPosts();
@@ -72,12 +72,12 @@ public class GroupLogicForAsync {
                 this.participantRepository.save(participant);
                 return this.postRepository.save(post);
             }
-            throw new PostNotFoundException("Post with id: "+postId+" doesnt exists!");
-        });
+            throw new PostNotFoundException("Post with id: " + postId + " doesnt exists!");
+        }, this.execService.getExecutor());
     }
 
-    public Future<List<DashboardResponse>> generateDashboard(User user) {
-        return this.execService.executeCallable(() -> {
+    public CompletableFuture<List<DashboardResponse>> generateDashboard(User user) {
+        return CompletableFuture.supplyAsync(() -> {
             List<DashboardResponse> list = new ArrayList<>(5);
             List<Participant> participants = this.participantRepository.findAllByUserIdFetchGroup(user.getId());
             List<Group> groups = participants
@@ -105,11 +105,11 @@ public class GroupLogicForAsync {
                 list.add(response);
             });
             return list;
-        });
+        }, this.execService.getExecutor());
     }
 
-    public Future<Group> handleNewGroup(RequestNewGroup requestNewGroup, User user) {
-        return this.execService.executeCallable(() -> {
+    public CompletableFuture<Group> handleNewGroup(RequestNewGroup requestNewGroup, User user) {
+        return CompletableFuture.supplyAsync(() -> {
             Group group = requestNewGroup.toGroup();
             group.setReaction(this.reactionRepository.findById(requestNewGroup.getReactionId()).orElseThrow(
                     () -> new ReactionNotFoundException("Reaction with given id doesnt exists!")
@@ -121,7 +121,7 @@ public class GroupLogicForAsync {
             participant.setGroup(group);
             participant.setUser(user);
             participant.setEnabled(true);
-            if(group.isForm()) {
+            if (group.isForm()) {
                 SignUpForm form = requestNewGroup.toSignUpForm();
                 form.setNickname("example");
                 form.setGroup(group);
@@ -131,7 +131,7 @@ public class GroupLogicForAsync {
             participant = this.participantRepository.save(participant);
             group.setCreatorId(participant.getId());
             return this.groupRepository.save(group);
-        });
+        }, this.execService.getExecutor());
     }
 
     public CompletableFuture<Participant> handleNewParticipant(Map<String, String> map, String id, User user) {
@@ -140,9 +140,9 @@ public class GroupLogicForAsync {
                     GroupForm groupForm = new GroupForm(map);
                     Participant participant = groupForm.getParticipant();
                     Group group = this.groupRepository.findByInviteCode(id).orElseThrow(
-                            () -> new GroupNotFoundException("Group with inviteCode "+ id + " doesnt exists")
+                            () -> new GroupNotFoundException("Group with inviteCode " + id + " doesnt exists")
                     );
-                    if(group.isForm()) {
+                    if (group.isForm()) {
                         SignUpForm form = groupForm.getSignUpForm();
                         form.setChecked(false);
                         form.setGroup(group);
@@ -155,17 +155,5 @@ public class GroupLogicForAsync {
                     return this.participantRepository.save(participant);
                 }, this.execService.getExecutor()
         );
-//        return this.execService.executeCallable(() -> {
-//            Participant participant = inviteParticipant.getParticipant();
-//            Group group = GroupLight.fromGroupLight(inviteParticipant.getGroupLight());
-//            SignUpForm form = inviteParticipant.getSignUpForm();
-//            form.setGroup(group);
-//            participant.setGroup(group);
-//            participant.setUser(user);
-//            group.setParticipantCount(group.getParticipantCount() + 1);
-//            this.groupRepository.save(group);
-//            this.signUpFormRepository.save(form);
-//            return this.participantRepository.save(participant);
-//        });
     }
 }
