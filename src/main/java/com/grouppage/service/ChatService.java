@@ -81,12 +81,8 @@ public class ChatService {
         Future<Participant> second = execService.executeCallable(() -> participantRepository.findByIdFetchUser(Long.parseLong(receiver))
             .orElseThrow(() -> new WrongDataPostedException("Posted data is invalid!")));
         List<Participant> partis = Arrays.asList(first.get(), second.get());
-//        if(this.checkOwnerOfParcitipant(socketMessage.getParticipantId())){
-//            throw new AccessDeniedException("This participant is not yours");
-//        }
         conversation.setParticipants(partis);
         Conversation conv = conversationRepository.save(conversation);
-        System.out.println("CONVERSATION ID: " + conv.getId());
         if(socketMessage.getType() == Type.NEW){
             Participant pierwszy = first.get();
             Participant drugi = second.get();
@@ -109,12 +105,9 @@ public class ChatService {
         if (!socketMessage.getType().equals(Type.CHAT)){
             throw new WrongDataPostedException("Group message posted to private handler!");
         }
-//        if(this.checkOwnerOfParcitipant(socketMessage.getParticipantId()))
-//            throw new AccessDeniedException("You dont own this participant");
         Conversation conversationFuture = this.conversationRepository.findByIdFetchParticipants(conversationId).orElseThrow(
                 () -> new ConversationNotFoundException("COnv not foud with id: "+conversationId)
         );
-        System.out.println(conversationFuture);
         List<Participant> fromConv = conversationFuture.getParticipants();
         if(fromConv.stream().noneMatch(p -> p.getId() == socketMessage.getParticipantId()))
             throw new AccessDeniedException("You have no permission do send messages here!");
@@ -237,49 +230,6 @@ public class ChatService {
 
 
 
-    /**
-     * test COde for managing messages
-     * @param socketMessage
-     * @param simpMessagingTemplate
-     */
-    private void testCode(SocketMessage socketMessage, SimpMessagingTemplate simpMessagingTemplate){
-        Principal user = (Principal)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<Participant> participants = participantRepository.findAllByUserId(user.getId());
-        //new SimpleAsyncTaskExecutor();
-        Future<List<Group>> futureGroups = execService.executeCallable( () -> participants.stream()
-                .map(Participant::getGroup)
-                .collect(Collectors.toList()));
-
-        Future<List<Conversation>> futureConversations = execService.executeCallable(
-                () -> conversationRepository.findAllByParticipantsIn(participants)
-        );
-
-
-
-        Future<List<Participant>> futurePartiFromGroups = execService.executeCallable(
-                () ->   participantRepository.findAllByGroupIn(futureGroups.get())
-        );
-        Future<List<Participant>> futurePartiFromParti = execService.executeCallable(
-                () -> futureConversations.get().stream().flatMap(p -> p.getParticipants().stream()).collect(Collectors.toList())
-        );
-
-        List<Long> userId = new ArrayList<>();
-        try {
-            List<Participant> participants1 = futurePartiFromGroups.get();
-            participants1.addAll(futurePartiFromParti.get());
-            userId = participants1.stream()
-                    .map(p -> p.getUser().getId()).distinct().collect(Collectors.toList());
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-        for (Long aLong : userId) {
-            execService.executeRunnable(
-                    () -> simpMessagingTemplate.convertAndSend(String.format("%s%s","/topic/", String.valueOf(aLong)), socketMessage)
-            );
-        }
-    }
-
-
     public List<ConversationLight> getConversations() {
         User user = this.authService.getUserFromContext();
         List<Conversation> conversations = this.conversationRepository.findAllByFetchParticipants();
@@ -295,11 +245,9 @@ public class ChatService {
                 () -> new ConversationNotFoundException("conversation not found")
         );
         User user = this.authService.getUserFromContext();
-        System.out.println("USER -> "+user);
         Participant myParticipantId = conversation.getParticipants().stream().filter(p -> p.getUser().getId() == user.getId()).findFirst().orElseThrow(
                 () -> new AccessDeniedException(" you does not take part in this conv")
         );
-        System.out.println("PARTICIPANT -> "+myParticipantId);
         return new ConversationInfoWithMessages(myParticipantId.getId(),
                 myParticipantId.getGroup().getId(),
                 conversation.getId(),
