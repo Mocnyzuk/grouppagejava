@@ -111,7 +111,7 @@ public class ChatService {
         }
 //        if(this.checkOwnerOfParcitipant(socketMessage.getParticipantId()))
 //            throw new AccessDeniedException("You dont own this participant");
-        Conversation conversationFuture = this.conversationRepository.findById(conversationId).orElseThrow(
+        Conversation conversationFuture = this.conversationRepository.findByIdFetchParticipants(conversationId).orElseThrow(
                 () -> new ConversationNotFoundException("COnv not foud with id: "+conversationId)
         );
         System.out.println(conversationFuture);
@@ -291,13 +291,15 @@ public class ChatService {
     }
 
     public ConversationInfoWithMessages getAllMessages(long conversationId) {
-        Conversation conversation = this.conversationRepository.findById(conversationId).orElseThrow(
+        Conversation conversation = this.conversationRepository.findByIdFetchParticipants(conversationId).orElseThrow(
                 () -> new ConversationNotFoundException("conversation not found")
         );
         User user = this.authService.getUserFromContext();
+        System.out.println("USER -> "+user);
         Participant myParticipantId = conversation.getParticipants().stream().filter(p -> p.getUser().getId() == user.getId()).findFirst().orElseThrow(
                 () -> new AccessDeniedException(" you does not take part in this conv")
         );
+        System.out.println("PARTICIPANT -> "+myParticipantId);
         return new ConversationInfoWithMessages(myParticipantId.getId(),
                 myParticipantId.getGroup().getId(),
                 conversation.getId(),
