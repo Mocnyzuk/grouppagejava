@@ -22,8 +22,6 @@ public class RegisterRequest {
 
     @Email
     private String email;
-    @Nullable
-    private String phone;
     @Size(min = 8, max = 16)
     private String password;
     @Size(min = 8, max = 16)
@@ -39,7 +37,6 @@ public class RegisterRequest {
         user.setActivated(true);
         user.setAuthorities(Collections.singletonList(
                 new SimpleGrantedAuthority("ROLE_USER")));
-        user.setPhone(this.phone == null ? "123123123" : this.phone);
         user.setPassword(encoder.encode(this.password));
         user.setLastOnline(Instant.now());
         return user;
