@@ -28,7 +28,7 @@ public class MailService {
         mail.setFrom(this.email);
         mail.setSubject("Thanks for registering click the activation link!");
         mail.setText("Hello "+ user.getEmail()+ "\n"+
-                "<a href=\"www.nazwastrony.pl/activate?id="+user.getResetPasswordToken()+"\">click</a>" );
+                "<a href=\"http://www.pusuj.herokuapp.com/activate?id="+user.getResetPasswordToken()+"\">click</a>" );
         mail.setTo(user.getEmail());
         return mail;
     }
