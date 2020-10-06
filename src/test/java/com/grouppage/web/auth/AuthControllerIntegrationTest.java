@@ -95,7 +95,6 @@ class AuthControllerIntegrationTest {
                         MAPPER.writeValueAsString(
                                 new RegisterRequest(
                                         "jrczyson@jrczyson.pl",
-                                        "123123123",
                                         "password",
                                         "password"
                                 )
