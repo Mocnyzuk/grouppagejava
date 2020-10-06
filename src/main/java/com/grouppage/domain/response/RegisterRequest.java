@@ -38,6 +38,7 @@ public class RegisterRequest {
         user.setAuthorities(Collections.singletonList(
                 new SimpleGrantedAuthority("ROLE_USER")));
         user.setPassword(encoder.encode(this.password));
+        user.setPhone("123123123");
         user.setLastOnline(Instant.now());
         return user;
     }

@@ -206,7 +206,6 @@ public class StartUp implements CommandLineRunner {
         fpmoles.setEmail(email);
         fpmoles.setPassword("password");
         fpmoles.setRepassword("password");
-        fpmoles.setPhone("123123123");
         User fpUser = fpmoles.toUser(this.passwordEncoder);
         if(admin){
             fpUser.setAuthorities(Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"),
