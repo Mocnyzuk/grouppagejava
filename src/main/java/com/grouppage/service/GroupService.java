@@ -344,4 +344,14 @@ public class GroupService {
             this.participantRepository.save(p);
         });
     }
+
+    public void declineThisParticipants(String[] nicknames, long groupId) {
+        List<Participant> participants = this.participantRepository.findAllByNicknameAndGroupId(nicknames, groupId);
+        if(participants.size() != nicknames.length) throw new WrongDataPostedException("Array z nickami uczestników zawiera nieprawidłowy nickname!");
+        this.groupRepository.findById(groupId).orElseThrow(() -> new GroupNotFoundException("Group not found"));
+        List<SignUpForm> forms = this.signUpFormRepository.findAllByGroupIdFetchGroup(groupId);
+        List<String> nicks = Arrays.asList(nicknames);
+        List<SignUpForm> correct = forms.stream().filter(f -> nicks.contains(f.getNickname())).collect(Collectors.toList());
+        this.signUpFormRepository.deleteAll(correct);
+    }
 }

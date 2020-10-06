@@ -65,6 +65,14 @@ public class GroupController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @PostMapping("/{groupId}/forms/decline")
+    public ResponseEntity<Void> declineForms(
+            @PathVariable("groupId") String groupId,
+            @RequestBody String[] nicknames
+    ){
+        this.groupService.declineThisParticipants(nicknames, Long.parseLong(groupId));
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
     @PostMapping("/{groupId}/edit")
     public ResponseEntity<Void> editGroup(
             @PathVariable("groupId") String groupId,
