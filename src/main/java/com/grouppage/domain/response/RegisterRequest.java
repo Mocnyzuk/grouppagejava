@@ -35,7 +35,7 @@ public class RegisterRequest {
         User user = new User();
         user.setEmail(this.email);
         user.setResetPasswordToken(UUID.randomUUID().toString());
-        user.setActivated(false);
+        user.setActivated(true);
         user.setAuthorities(Collections.singletonList(
                 new SimpleGrantedAuthority("ROLE_USER")));
         user.setPhone(this.phone);
