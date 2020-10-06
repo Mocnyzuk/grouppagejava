@@ -5,6 +5,7 @@ import com.grouppage.exception.WrongCredentialsException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -21,7 +22,7 @@ public class RegisterRequest {
 
     @Email
     private String email;
-    @Size(min = 9)
+    @Nullable
     private String phone;
     @Size(min = 8, max = 16)
     private String password;
@@ -38,7 +39,7 @@ public class RegisterRequest {
         user.setActivated(true);
         user.setAuthorities(Collections.singletonList(
                 new SimpleGrantedAuthority("ROLE_USER")));
-        user.setPhone(this.phone);
+        user.setPhone(this.phone == null ? "123123123" : this.phone);
         user.setPassword(encoder.encode(this.password));
         user.setLastOnline(Instant.now());
         return user;
