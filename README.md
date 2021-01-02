@@ -4,7 +4,7 @@
 >
 >_With topics for logged users where you can post their content._
 
-####**Tech stack:**
+#### **Tech stack:**
 * Java 8
 * Spring Boot 2 (Data JPA, Security, WebSocket)
 * JUnit5
